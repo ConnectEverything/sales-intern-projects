@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/document.schema.json",
+  "title": "Collaborative Document",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the document",
+      "type": "string"
+    },
+    "title": {
+      "description": "Title of the document",
+      "type": "string"
+    },
+    "content": {
+      "description": "Content of the document",
+      "type": "array",
+      
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "description": "Type of the content. hard_break is the only type in which text is not required",
+            "type": "string",
+            "enum": ["text", "paragraph", "heading", "bullet_list", "ordered_list", "hard_break"]
+          },
+          "text": {
+            "description": "Text of the content",
+            "type": "string"
+          },
+          "marks": {
+            "description": "Text formatting marks",
+            "type": "object",
+            "properties": {
+              "bold": {"type": "boolean"},
+              "italic": {"type": "boolean"},
+              "underline": {"type": "boolean"}
+            },
+            "additionalProperties": false
+          },
+          "level": {
+            "description": "Level of the heading (only applicable to 'heading' type)",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6
+          },
+          "list": {
+            "description": "List items (applicable to 'bullet_list', 'ordered_list'). The list would be an array of 'items' that we've already laid out",
+            "type": "array",
+            "items": {"$ref": "#/properties/content/items"}
+          }
+        },
+        "required": ["type"],
+        "additionalProperties": false
+      }
+
+    }
+  },
+  "required": ["id", "title", "content"],
+  "additionalProperties": false
+}
