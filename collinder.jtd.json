@@ -31,8 +31,8 @@
              "level": { "type": "uint8" }
            }
          },
-         "bullet_list": { "ref": "text" },
-         "ordered_list": { "ref": "text" },
+         "bullet_list": { "ref": "list_item" },
+         "ordered_list": { "ref": "list_item" },
          "list_item": { "ref": "text" },
          "hard_break": {},
          "image": {

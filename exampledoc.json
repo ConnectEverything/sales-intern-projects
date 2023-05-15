@@ -1,4 +1,5 @@
 {
+  "type" : "doc",
   "id": "doc1",
   "title": "Collaborative Document",
   "content": [
@@ -27,7 +28,7 @@
         },
         {
           "type": "text",
-          "text": ". You can edit this document collaboratively."
+          "text": ". Pretty cool and stuff."
         }
       ]
     },
@@ -55,26 +56,7 @@
       ]
     },
     {
-      "type": "horizontal_rule"
-    },
-    {
-      "type": "block_quote",
-      "content": [
-        {
-          "type": "text",
-          "text": "This is a block quote."
-        }
-      ]
-    },
-    {
-      "type": "code_block",
-      "content": [
-        {
-          "type": "text",
-          "text": "console.log('Hello, world!');",
-          "marks": { "code": true }
-        }
-      ]
+      "type": "hard_break"
     },
     {
       "type": "image",
@@ -89,6 +71,12 @@
       "name": "John Doe",
       "color": "#ff0000",
       "position": 42
+    },
+    {
+      "id": "collab2",
+      "name": "Bob Smith",
+      "color": "#ff0001",
+      "position": 3
     }
   ]
 }
