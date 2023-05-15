@@ -4,6 +4,7 @@ Monday 5/15
   <li>9-10 AM: Delaney Call</li>
   <li>10AM -2:20 PM: Working on JTD visualization of document</li>
   <li>2:20-2:50 PM: Lunch Break</li>
+  <li>2:50 - 7:45: Finalized JTD</li>
 </ul>
 
 
