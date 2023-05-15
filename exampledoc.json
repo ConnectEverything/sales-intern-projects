@@ -1,0 +1,94 @@
+{
+  "id": "doc1",
+  "title": "Collaborative Document",
+  "content": [
+    {
+      "type": "heading",
+      "level": 1,
+      "content": [
+        {
+          "type": "text",
+          "text": "Introduction",
+          "marks": { "bold": true }
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "This is an example of a "
+        },
+        {
+          "type": "text",
+          "text": "collaborative document",
+          "marks": { "bold": true, "italic": true }
+        },
+        {
+          "type": "text",
+          "text": ". You can edit this document collaboratively."
+        }
+      ]
+    },
+    {
+      "type": "bullet_list",
+      "content": [
+        {
+          "type": "list_item",
+          "content": [
+            {
+              "type": "text",
+              "text": "First item"
+            }
+          ]
+        },
+        {
+          "type": "list_item",
+          "content": [
+            {
+              "type": "text",
+              "text": "Second item"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "horizontal_rule"
+    },
+    {
+      "type": "block_quote",
+      "content": [
+        {
+          "type": "text",
+          "text": "This is a block quote."
+        }
+      ]
+    },
+    {
+      "type": "code_block",
+      "content": [
+        {
+          "type": "text",
+          "text": "console.log('Hello, world!');",
+          "marks": { "code": true }
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "src": "https://example.com/image.jpg",
+      "alt": "Example Image",
+      "title": "Example Image Title"
+    }
+  ],
+  "collaborators": [
+    {
+      "id": "collab1",
+      "name": "John Doe",
+      "color": "#ff0000",
+      "position": 42
+    }
+  ]
+}
