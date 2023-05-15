@@ -1,61 +1,60 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.com/document.schema.json",
-  "title": "Collaborative Document",
-  "type": "object",
-  "properties": {
-    "id": {
-      "description": "Unique identifier for the document",
-      "type": "string"
-    },
-    "title": {
-      "description": "Title of the document",
-      "type": "string"
-    },
-    "content": {
-      "description": "Content of the document",
-      "type": "array",
-      
-      "items": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "description": "Type of the content. hard_break is the only type in which text is not required",
-            "type": "string",
-            "enum": ["text", "paragraph", "heading", "bullet_list", "ordered_list", "hard_break"]
-          },
-          "text": {
-            "description": "Text of the content",
-            "type": "string"
-          },
-          "marks": {
-            "description": "Text formatting marks",
-            "type": "object",
-            "properties": {
-              "bold": {"type": "boolean"},
-              "italic": {"type": "boolean"},
-              "underline": {"type": "boolean"}
-            },
-            "additionalProperties": false
-          },
-          "level": {
-            "description": "Level of the heading (only applicable to 'heading' type)",
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 6
-          },
-          "list": {
-            "description": "List items (applicable to 'bullet_list', 'ordered_list'). The list would be an array of 'items' that we've already laid out",
-            "type": "array",
-            "items": {"$ref": "#/properties/content/items"}
-          }
-        },
-        "required": ["type"],
-        "additionalProperties": false
-      }
-
-    }
-  },
-  "required": ["id", "title", "content"],
-  "additionalProperties": false
+ "properties": {
+   "id": { "type": "string" },
+   "title": { "type": "string" },
+   "content": {
+     "elements": {
+       "discriminator": "type",
+       "mapping": {
+         "text": {
+           "properties": {
+             "text": { "type": "string" },
+             "marks": {
+               "optional": true,
+               "properties": {
+                 "bold": { "type": "boolean" },
+                 "italic": { "type": "boolean" },
+                 "underline": { "type": "boolean" },
+                 "link": {
+                   "optional": true,
+                   "properties": {
+                     "href": { "type": "string" }
+                   }
+                 }
+               }
+             }
+           }
+         },
+         "paragraph": { "ref": "content" },
+         "heading": {
+           "properties": {
+             "level": { "type": "uint8" }
+           }
+         },
+         "bullet_list": { "ref": "text" },
+         "ordered_list": { "ref": "text" },
+         "list_item": { "ref": "text" },
+         "hard_break": {},
+         "image": {
+           "properties": {
+             "src": { "type": "string" },
+             "alt": { "optional": true, "type": "string" },
+             "title": { "optional": true, "type": "string" }
+           }
+         }
+       }
+     }
+   },
+   "collaborators": {
+     "optional": true,
+     "elements": {
+       "properties": {
+         "id": { "type": "string" },
+         "name": { "type": "string" },
+         "color": { "type": "string" },
+         "position": { "type": "int32" }
+       }
+     }
+   }
+ }
 }
