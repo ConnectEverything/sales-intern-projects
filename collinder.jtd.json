@@ -42,11 +42,6 @@
               "ref": "content"
             }
           },
-         "ordered_list": { 
-          "properties": {
-            "ref": "content"
-          }
-         },
          "list_item": { 
             "properties": {
               "ref": "content"
