@@ -70,13 +70,13 @@
       "id": "collab1",
       "name": "John Doe",
       "color": "#ff0000",
-      "position": 42
+      "position": 3
     },
     {
       "id": "collab2",
       "name": "Bob Smith",
       "color": "#ff0001",
-      "position": 3
+      "position": 1
     }
   ]
 }

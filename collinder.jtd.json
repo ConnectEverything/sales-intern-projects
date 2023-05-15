@@ -2,62 +2,64 @@
  "properties": {
    "id": { "type": "string" },
    "title": { "type": "string" },
-   "type" : { "type" : "text", "enum" : ["doc"] },
-   "content": {
-     "elements": {
-       "discriminator": "type",
-       "mapping": {
-         "text": {
-           "properties": {
-             "text": { "type": "string" },
-             "marks": {
-               "optional": true,
-               "properties": {
-                 "bold": { "type": "boolean" },
-                 "italic": { "type": "boolean" },
-                 "underline": { "type": "boolean" },
-                 "link": {
-                   "optional": true,
-                   "properties": {
-                     "href": { "type": "string" }
-                   }
-                 }
-               }
-             }
-           }
-         },
-         "paragraph": { 
+   "type" : { "type" : "string", "enum" : ["doc"] },
+   "definition" : {
+      "content": {
+      "elements": {
+        "discriminator": "type",
+        "mapping": {
+          "text": {
             "properties": {
-              "ref": "content"
-            }
-         },
-         "heading": {
-           "properties": {
-             "level": { "type": "uint8" },
-             "ref" : "text"
-           }
-         },
-         "bullet_list": { 
-            "properties": {
-              "ref": "content"
+              "text": { "type": "string" },
+              "marks": {
+                "optional": true,
+                "properties": {
+                  "bold": { "type": "boolean" },
+                  "italic": { "type": "boolean" },
+                  "underline": { "type": "boolean" },
+                  "link": {
+                    "optional": true,
+                    "properties": {
+                      "href": { "type": "string" }
+                    }
+                  }
+                }
+              }
             }
           },
-         "list_item": { 
+          "paragraph": { 
+              "properties": {
+                "ref": "content"
+              }
+          },
+          "heading": {
             "properties": {
-              "ref": "content"
+              "level": { "type": "uint8" },
+              "ref" : "text"
             }
           },
-         "hard_break": {},
-         "image": {
-           "properties": {
-             "src": { "type": "string" },
-             "alt": { "optional": true, "type": "string" },
-             "title": { "optional": true, "type": "string" }
-           }
-         }
-       }
-     }
-   },
+          "bullet_list": { 
+              "properties": {
+                "ref": "content"
+              }
+            },
+          "list_item": { 
+              "properties": {
+                "ref": "content"
+              }
+            },
+          "hard_break": {},
+          "image": {
+            "properties": {
+              "src": { "type": "string" },
+              "alt": { "optional": true, "type": "string" },
+              "title": { "optional": true, "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  },
    "collaborators": {
      "optional": true,
      "elements": {
