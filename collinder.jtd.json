@@ -1,24 +1,73 @@
 {
- "properties": {
-   "id": { "type": "string" },
-   "title": { "type": "string" },
-   "type" : { "type" : "string", "enum" : ["doc"] },
-   "definition" : {
-      "content": {
+  "properties": {
+    "id": { "type": "string" },
+    "title": { "type": "string" },
+    "type" : { "type" : "string", "enum" : ["doc"] },
+    "content": {
+      "elements": {
+        "discriminator": "type",
+        "mapping": {
+          "paragraph": { 
+              "properties": {
+                "content": {
+                  "ref": "contentBlock"
+                }
+              }
+          },
+          "heading": {
+            "properties": {
+              "level": { "type": "uint8" },
+              "content": {
+                "ref" : "contentBlock"
+              }
+            }
+          },
+          "bullet_list": { 
+              "properties": {
+                "content": {
+                  "ref": "contentBlock"
+                }
+              }
+            },
+          "hard_break": {},
+          "image": {
+            "properties": {
+              "src": { "type": "string" },
+              "alt": { "optional": "true", "type": "string" },
+              "title": { "optional": "true", "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "collaborators": {
+      "elements": {
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "color": { "type": "string" },
+          "position": { "type": "int32" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "contentBlock": {
       "elements": {
         "discriminator": "type",
         "mapping": {
           "text": {
             "properties": {
-              "text": { "type": "string" },
+              "text": { "type": "string" }  
+            },
+            "optionalProperties": {
               "marks": {
-                "optional": true,
-                "properties": {
+                "optionalProperties": {
                   "bold": { "type": "boolean" },
                   "italic": { "type": "boolean" },
                   "underline": { "type": "boolean" },
                   "link": {
-                    "optional": true,
+                    "optional": "true",
                     "properties": {
                       "href": { "type": "string" }
                     }
@@ -27,49 +76,15 @@
               }
             }
           },
-          "paragraph": { 
-              "properties": {
-                "ref": "content"
-              }
-          },
-          "heading": {
-            "properties": {
-              "level": { "type": "uint8" },
-              "ref" : "text"
-            }
-          },
-          "bullet_list": { 
-              "properties": {
-                "ref": "content"
-              }
-            },
           "list_item": { 
-              "properties": {
-                "ref": "content"
-              }
-            },
-          "hard_break": {},
-          "image": {
             "properties": {
-              "src": { "type": "string" },
-              "alt": { "optional": true, "type": "string" },
-              "title": { "optional": true, "type": "string" }
+              "content": {
+                "ref": "contentBlock"
+              }
             }
           }
         }
       }
     }
-  },
-   "collaborators": {
-     "optional": true,
-     "elements": {
-       "properties": {
-         "id": { "type": "string" },
-         "name": { "type": "string" },
-         "color": { "type": "string" },
-         "position": { "type": "int32" }
-       }
-     }
-   }
- }
+  }
 }

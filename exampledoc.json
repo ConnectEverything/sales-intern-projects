@@ -1,82 +1,82 @@
 {
   "type" : "doc",
-  "id": "doc1",
-  "title": "Collaborative Document",
-  "content": [
-    {
-      "type": "heading",
-      "level": 1,
-      "content": [
-        {
-          "type": "text",
-          "text": "Introduction",
-          "marks": { "bold": true }
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "content": [
-        {
-          "type": "text",
-          "text": "This is an example of a "
-        },
-        {
-          "type": "text",
-          "text": "collaborative document",
-          "marks": { "bold": true, "italic": true }
-        },
-        {
-          "type": "text",
-          "text": ". Pretty cool and stuff."
-        }
-      ]
-    },
-    {
-      "type": "bullet_list",
-      "content": [
-        {
-          "type": "list_item",
-          "content": [
-            {
-              "type": "text",
-              "text": "First item"
-            }
-          ]
-        },
-        {
-          "type": "list_item",
-          "content": [
-            {
-              "type": "text",
-              "text": "Second item"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "hard_break"
-    },
-    {
-      "type": "image",
-      "src": "https://example.com/image.jpg",
-      "alt": "Example Image",
-      "title": "Example Image Title"
-    }
-  ],
-  "collaborators": [
-    {
-      "id": "collab1",
-      "name": "John Doe",
-      "color": "#ff0000",
-      "position": 3
-    },
-    {
-      "id": "collab2",
-      "name": "Bob Smith",
-      "color": "#ff0001",
-      "position": 1
-    }
-  ]
+    "id": "doc1",
+    "title": "Collaborative Document",
+    "content": [
+      {
+        "type": "heading",
+        "level": 1,
+        "content": [
+          {
+            "type": "text",
+            "text": "Introduction",
+            "marks": { "bold": true }
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "This is an example of a "
+          },
+          {
+            "type": "text",
+            "text": "collaborative document",
+            "marks": { "bold": true, "italic": true }
+          },
+          {
+            "type": "text",
+            "text": ". Pretty cool and stuff."
+          }
+        ]
+      },
+      {
+        "type": "bullet_list",
+        "content": [
+          {
+            "type": "list_item",
+            "content": [
+              {
+                "type": "text",
+                "text": "First item"
+              }
+            ]
+          },
+          {
+            "type": "list_item",
+            "content": [
+              {
+                "type": "text",
+                "text": "Second item"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "hard_break"
+      },
+      {
+        "type": "image",
+        "src": "https://example.com/image.jpg",
+        "alt": "Example Image",
+        "title": "Example Image Title"
+      }
+    ],
+    "collaborators": [
+      {
+        "id": "collab1",
+        "name": "John Doe",
+        "color": "#ff0000",
+        "position": 3
+      },
+      {
+        "id": "collab2",
+        "name": "Bob Smith",
+        "color": "#ff0001",
+        "position": 1
+      }
+    ]
 }
