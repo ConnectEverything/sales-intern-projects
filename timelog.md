@@ -7,4 +7,7 @@ Monday 5/15
   <li>2:50 - 7:45: Finalized JTD</li>
 </ul>
 
-
+Tuesday 5/16
+<ul>
+  <li></li>
+</ul>
