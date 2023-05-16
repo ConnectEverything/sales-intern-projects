@@ -5,11 +5,20 @@ import type {
   UserView,
 } from "./types.ts";
 
+import { connect, JSONCodec } from 'nats.ws';
+
 export class RoomChannel {
-  #channel: BroadcastChannel;
+  // #channel: BroadcastChannel;
+  natsConnection: null;
+  jc: null;
+
+  async init() {
+    this.jc = JSONCodec()
+    this.nats = await connect({ servers: "ws://localhost:8000" })
+  }
 
   constructor(roomId: number) {
-    this.#channel = new BroadcastChannel(roomId.toString());
+    this.#channel = new BroadcastChannel(roomId.toString()); //this.connectToNats(roomId)
   }
 
   onMessage(handler: (message: ChannelMessage) => void) {

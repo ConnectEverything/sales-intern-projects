@@ -9,5 +9,5 @@ Monday 5/15
 
 Tuesday 5/16
 <ul>
-  <li></li>
+  <li>9 - 5, 2 10 minute breaks and a lunch break</li>
 </ul>
