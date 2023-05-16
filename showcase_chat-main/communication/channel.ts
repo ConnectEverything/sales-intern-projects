@@ -8,14 +8,14 @@ import type {
 import { connect, JSONCodec } from 'nats.ws';
 
 export class RoomChannel {
-  // #channel: BroadcastChannel;
-  natsConnection: null;
-  jc: null;
+  #channel: BroadcastChannel;
+  // natsConnection: null;
+  // jc: null;
 
-  async init() {
-    this.jc = JSONCodec()
-    this.nats = await connect({ servers: "ws://localhost:8000" })
-  }
+  // async init() {
+  //   this.jc = JSONCodec()
+  //   this.nats = await connect({ servers: "ws://localhost:8000" })
+  // }
 
   constructor(roomId: number) {
     this.#channel = new BroadcastChannel(roomId.toString()); //this.connectToNats(roomId)
