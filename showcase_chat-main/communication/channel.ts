@@ -5,8 +5,6 @@ import type {
   UserView,
 } from "./types.ts";
 
-import { connect, JSONCodec } from 'nats.ws';
-
 export class RoomChannel {
   #channel: BroadcastChannel;
   // natsConnection: null;
