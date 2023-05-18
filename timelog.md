@@ -11,3 +11,13 @@ Tuesday 5/16
 <ul>
   <li>9 - 5, 2 10 minute breaks and a lunch break</li>
 </ul>
+
+Wednesday 5/17 
+<ul>
+  <li>9:30 - 5, 2 10 minute breaks and a lunch break</li>
+</ul>
+
+Thursday 5/18 
+<ul>
+  <li>9 - 5, 2 10 minute breaks and a lunch break</li>
+</ul>
