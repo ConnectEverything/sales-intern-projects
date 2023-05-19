@@ -42,7 +42,7 @@ const watch = await kv.watch();
 
 await kv.create("ctogs1221", sc.encode("I'm cool"));
 await kv.create("bobjones1223", sc.encode("No ur not"));
-await kv.create("tkoditu1230", sc.encode("Ur fat"));
+await kv.create("tkoditu1230", sc.encode("Ur ok"));
 
 
 
