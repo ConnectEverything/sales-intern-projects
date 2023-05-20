@@ -3,40 +3,29 @@ import { Head } from "$fresh/runtime.ts";
 import Chat from "../islands/Chat.tsx";
 import type { MessageView, UserView } from "../communication/types.ts";
 import { Page } from "../helpers/Page.tsx";
-import * as nats from "denonats";
+import { natsConnection } from "../communication/natsconnection.ts";
+import { UserMessage, UserView } from "../communication/types.ts";
 
 
 
 
 interface Data {
   roomName: string;
+  messages: UserMessage;
+  username: string;
 }
 
 export const handler: Handler<Data> = async (
   req: Request,
   ctx: HandlerContext<Data>,
 ): Promise<Response> => {
-  // const nc = await nats.connect({ servers: "ws://localhost:4222"})
-  // const sc = nats.StringCodec();
 
-  // // set an ephemeral consumer to only receive the latest message sent to the stream
-  // // in this case it would be the latest name of the room the user wants to join/create
-  // const opts = nats.consumerOpts();
-  // opts.maxMessages(1);
-  // opts.deliverLast();
-  // opts.orderedConsumer();
-
-  // const sub = await nc.jetstream().subscribe("chat.rooms_created", opts);
-  
-  // for await (const msg of sub) {
-  //   var roomName = sc.decode(msg.data);
-  // }
-
-  const roomName = +ctx.params.room;
+  const roomName = await natsConnection.getRoomName();
+  const messages = await natsConnection.getRoomMessages(roomName);
   
   return ctx.render({
-    // messages,
-    roomName
+    roomName,
+    messages
     // user: {
     //   name: user.userName,
     //   avatarUrl: user.avatarUrl,

@@ -39,6 +39,7 @@ export default function Chat(
       </div>
       <div class="w-5/6 md:w-1/2 h-16 flex-none rounded-full flex items-center">
         <ChatInput
+          
         />
       </div>
     </>

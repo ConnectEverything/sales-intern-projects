@@ -3,7 +3,6 @@ import type { UserMessage } from "../types.ts"
 
 
 export class NatsConnection {
-  // create connection to nats ws server
   nc: any;
   jsm: any;
   sc: any;
@@ -11,16 +10,16 @@ export class NatsConnection {
 
 
   constructor() {
-    const sc = nats.StringCodec();
-    const jc = nats.JSONCodec();
+    this.sc = nats.StringCodec();
+    this.jc = nats.JSONCodec();
   }
 
   async createConnection() {
-    const nc = await nats.connect({ servers: "ws://localhost:4222" });
-    const jsm = nc.jetstreamManager();
+    this.nc = await nats.connect({ servers: "ws://localhost:4222" });
+    this.jsm = this.nc.jetstreamManager();
   }
 
-  async connectToRoom(roomName: string) {
+  async getRoomMessages(roomName: string) {
     const subj = "chats." + roomName;
     await this.jsm.streams.add({ name: "chatrooms", subjects: [subj] });
     
@@ -28,13 +27,17 @@ export class NatsConnection {
     const opts = nats.consumerOpts();
     opts.orderedConsumer();
 
+    const msgs: UserMessage[] = [];
     const sub = await this.nc.jetstream().subscribe(subj, opts);
     for await (const msg of sub) {
       const data = this.jc.decode(msg.data);
 
+      msgs.push(data);
       // make a "display chatmessage" type of thing
       console.log(`${data.username}: "${data.message}"`);
     }
+
+    return msgs;
   }
   
   async sendChatMessage(message: UserMessage) {
@@ -42,10 +45,33 @@ export class NatsConnection {
     const subj = "chats." + message.roomName;
     await this.jsm.streams.add({ name: "chatrooms", subjects: [subj] });
 
-    this.nc.publish(subj, message);
+    await this.nc.publish(subj, message);
 
-    this.nc.close();
+    // this.nc.close();
+  }
+
+  async publishRoomName(roomName: string) {
+    await this.jsm.streams.add({ name: "roomz", subjects: ["room"] });
+    await this.nc.publish("room", this.sc.encode(roomName));
   }
   
+  async getRoomName() {
+    await this.jsm.streams.add({ name: "roomz", subjects: ["room"] });
+    
+    // create an ephemeral consumer that gets the latest message on the stream only
+    const opts = nats.consumerOpts();
+    opts.orderedConsumer();
+    opts.maxMessages(1);
+    opts.deliverLast();
+
+    // subscribe to the subject, console should only log "room34"
+    const sub = await this.nc.jetstream().subscribe("room", opts)
+    for await (const msg of sub) {
+      const data = this.sc.decode(msg.data)
+      return data;
+    }
+  }
 
 }
+
+export const natsConnection = new NatsConnection(); 
