@@ -1,5 +1,6 @@
 import * as nats from "https://deno.land/x/nats/src/mod.ts";
-import type { UserMessage } from "../types.ts"
+import type { UserMessage } from "../types.ts";
+import { connect } from "https://raw.githubusercontent.com/nats-io/nats.ws/main/src/mod.ts";
 
 
 export class NatsConnection {
@@ -15,7 +16,7 @@ export class NatsConnection {
   }
 
   async createConnection() {
-    this.nc = await nats.connect({ servers: "ws://localhost:4222" });
+    this.nc = await connect({ servers: "ws://localhost:4222" });
     this.jsm = this.nc.jetstreamManager();
   }
 
@@ -61,7 +62,6 @@ export class NatsConnection {
     // create an ephemeral consumer that gets the latest message on the stream only
     const opts = nats.consumerOpts();
     opts.orderedConsumer();
-    opts.maxMessages(1);
     opts.deliverLast();
 
     // subscribe to the subject, console should only log "room34"
@@ -70,6 +70,23 @@ export class NatsConnection {
       const data = this.sc.decode(msg.data)
       return data;
     }
+  }
+
+  async getRooms() {
+    await this.jsm.streams.add({ name: "roomz", subjects: ["room"] });
+    
+    // create an ephemeral consumer
+    const opts = nats.consumerOpts();
+    opts.orderedConsumer();
+
+
+    const roomNames: string[] = [];
+    const sub = await this.nc.jetstream().subscribe("room", opts)
+    for await (const msg of sub) {
+      const data = this.sc.decode(msg.data)
+      roomNames.push(data);
+    }
+    return roomNames;
   }
 
 }

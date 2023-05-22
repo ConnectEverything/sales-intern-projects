@@ -17,7 +17,7 @@ nc.publish("room", sc.encode("room34"));
 // create an ephemeral consumer that gets the latest message on the stream only
 const opts = nats.consumerOpts();
 opts.orderedConsumer();
-opts.maxMessages(1);
+// opts.maxMessages(1);
 opts.deliverLast();
 
 // subscribe to the subject, console should only log "room34"

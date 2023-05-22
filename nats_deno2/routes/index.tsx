@@ -1,7 +1,16 @@
 import { Head } from "$fresh/runtime.ts";
+import { useEffect } from "preact/hooks";
+import { natsConnection } from "../communication/natsconnection.ts";
 
 
 export default function Home() {
+  useEffect(() => {
+    natsConnection.createConnection();
+    const roomNames = natsConnection.getRooms();
+    console.log("connection");
+  }, [])
+
+
   return (
     <>
       <Head>
