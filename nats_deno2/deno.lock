@@ -1,6 +1,17 @@
 {
   "version": "2",
   "remote": {
+    "https://cdn.skypack.dev/-/bignumber.js@v9.0.1-4KoVHFt2ZZQCsncNDYKf/dist=es2019,mode=imports/optimized/bignumberjs.js": "76071c2f0919dc8802720fa44385091f4200b56755d079a1c55c6e95ebbfa081",
+    "https://cdn.skypack.dev/-/json-bigint@v1.0.0-3dI5boeAr2AEjW10AiJE/dist=es2019,mode=imports/optimized/json-bigint.js": "b42699652060ddfe516a73fd71c2b75faeb39bbcf5e179427d68492efdb2727f",
+    "https://cdn.skypack.dev/-/nats.ws@v1.14.0-pPgNnJ5KtxoFyXO0tbqy/dist=es2019,mode=imports/optimized/nats.ws.js": "d481a913c0aaacebf90033ae942bf9869ec1b33f00ea804c4a438339146006b5",
+    "https://cdn.skypack.dev/-/preact@v10.15.0-DNU3yoh4PRINFbLIjPNW/dist=es2019,mode=imports/optimized/preact.js": "0d2d2e3d9f4a31be025445018f157b72dc3a6abbf4cbb784a645e2cb487fc3f2",
+    "https://cdn.skypack.dev/-/preact@v10.15.0-DNU3yoh4PRINFbLIjPNW/dist=es2019,mode=imports/optimized/preact/hooks.js": "cd4e23a1f582f5391f47da52a89c041fa466c6ad275cb7988785e5a186606625",
+    "https://cdn.skypack.dev/-/preact@v10.15.0-DNU3yoh4PRINFbLIjPNW/dist=es2020,mode=imports/optimized/preact.js": "0d2d2e3d9f4a31be025445018f157b72dc3a6abbf4cbb784a645e2cb487fc3f2",
+    "https://cdn.skypack.dev/-/preact@v10.15.0-DNU3yoh4PRINFbLIjPNW/dist=es2020,mode=imports/optimized/preact/hooks.js": "cd4e23a1f582f5391f47da52a89c041fa466c6ad275cb7988785e5a186606625",
+    "https://cdn.skypack.dev/json-bigint": "a8363c9c397cae0406f9772d9277ea36caf1fdcfd5cc4c13b847b28c068c4da9",
+    "https://cdn.skypack.dev/nats.ws": "c882703e5cfaf441ac44aa53a89758d145ff8ad39f51508ba894a369e9de3751",
+    "https://cdn.skypack.dev/pin/preact@v10.15.0-DNU3yoh4PRINFbLIjPNW/mode=imports/optimized/preact/hooks.js": "d170c98c4f062d378de4867b8ec0a2efb78919d5f240d12f2a42816701c7563d",
+    "https://cdn.skypack.dev/preact/hooks": "baf8e5e0dff55ca1389503a31890f2ed9b52a1447feda0bc72978d6cab8bef16",
     "https://deno.land/std@0.140.0/_util/assert.ts": "e94f2eb37cebd7f199952e242c77654e43333c1ac4c5c700e929ea3aa5489f74",
     "https://deno.land/std@0.140.0/_util/os.ts": "3b4c6e27febd119d36a416d7a97bd3b0251b77c88942c8f16ee5953ea13e2e49",
     "https://deno.land/std@0.140.0/fs/_util.ts": "0fb24eb4bfebc2c194fb1afdb42b9c3dda12e368f43e8f2321f84fc77d42cb0f",
