@@ -50,10 +50,10 @@ const buf: string[] = [];
 const keys = await kv.keys();
 await (async () => {
   for await (const k of keys) {
-    // console.log(k);
+    console.log(k);
     // buf.push(k);
-    const val = await kv.get(k);
-    console.log(k + `: ${sc.decode(val!.value)}`);
+    // const val = await kv.get(k);
+    // console.log(k + `: ${sc.decode(val!.value)}`);
   }
 })();
 
@@ -73,7 +73,6 @@ console.log("bobjones1223" + `: ${sc.decode(d!.value)}` );
 //     );
 //   }
 // })();
-
 // deletes the key - the delete is recorded
 // await kv.delete("hello.world");
 

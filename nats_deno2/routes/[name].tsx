@@ -2,7 +2,6 @@ import { Handler, HandlerContext, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
 import Chat from "../islands/Chat.tsx";
 import { Page } from "../helpers/Page.tsx";
-import { natsConnection } from "../communication/natsconnection.ts";
 import { UserMessage, UserView } from "../communication/types.ts";
 
 
@@ -18,9 +17,8 @@ export const handler: Handler<Data> = async (
   req: Request,
   ctx: HandlerContext<Data>,
 ): Promise<Response> => {
-
-  const roomName = await natsConnection.getRoomName();
-  const messages = await natsConnection.getRoomMessages(roomName);
+  const roomName = "poopyroom";
+  const messages = "thevidu";
   
   return ctx.render({
     roomName,
