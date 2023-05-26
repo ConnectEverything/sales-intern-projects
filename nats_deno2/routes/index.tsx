@@ -1,48 +1,10 @@
 import { Head } from "$fresh/runtime.ts";
-import { useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { HandlerContext, PageProps } from "$fresh/server.ts";
-import { natsClient, natsJetstreamClient, natsKVClient, decodeFromBuf } from "../communication/nats.ts";
-import { connect } from "https://raw.githubusercontent.com/nats-io/nats.ws/main/src/mod.ts";
-import * as nats from "https://deno.land/x/nats/src/mod.ts";
+import Rooms from "../islands/Rooms.tsx";
 
 
-export async function handler(
-  req: Request,
-  ctx: HandlerContext,
-): Promise<Response> {
-  const [roomBucket] = await Promise.all([
-    natsKVClient('roomBucket'),
-  ])
-
-  const jc = nats.JSONCodec();
-  const watch = await roomBucket.watch();
-  const roomNames: string[] = [];
-  (async () => {
-    for await (const e of watch) {
-      if (e.operation != "DEL") {
-        const dcd = jc.decode(e.value);
-        roomNames.push(dcd.name);
-      }
-    }
-      
-  })().then();
-
-  // for some reason, the for loop above won't run unless I have this line
-  const keys = await roomBucket.keys();
-
-  // for await (const k of keys) {
-  //   const room = await roomBucket.get(k);
-  //   const decoded = jc.decode(room.value)
-  // }
-
-  const response = await ctx.render({
-    rooms: roomNames,
-  })
-
-  return response;
-}
-
-export default function Home({ data }) {
+export default function Home() {
 
   return (
     <>
@@ -98,36 +60,7 @@ export default function Home({ data }) {
             on Deno Deploy.
           </span>
         </div>
-        <ul
-          role="list"
-          class="max-h-[21.375rem] mx-2 md:mx-0 overflow-y-scroll space-y-4.5"
-        >
-          <li>
-            <a
-              href="/new"
-              class="flex justify-center items-center bg-white rounded-full h-18 border-2 border-gray-300 transition-colors hover:(bg-green-100 border-green-400) group"
-            >
-              <div class="w-8 h-8 flex justify-center items-center mr-2.5">
-                <img src="/plus.svg" alt="Plus" />
-              </div>
-              <span class="text-xl font-bold text-gray-900 group-hover:underline group-focus:underline">
-                New Room
-              </span>
-            </a>
-          </li>
-          {data.rooms.map(name => (
-              <li key={name}>
-              <a
-                href={`/rooms/${name}`}
-                class="flex justify-center items-center bg-white rounded-full h-18 border-2 border-gray-300 transition-colors hover:(bg-green-100 border-green-400) group"
-              >
-                <span class="text-xl font-bold text-gray-900 group-hover:underline group-focus:underline">
-                  {name}
-                </span>
-              </a>
-            </li>
-          ))}
-          </ul>
+        <Rooms />
         
     </>
   );
