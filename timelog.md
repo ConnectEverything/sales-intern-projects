@@ -45,3 +45,8 @@ Thursday 5/25
 <ul>
   <li>11 - 6, 1 10 minute break and a lunch break, fixed the import error, but am working on establishing connection to Nats in Fresh</li>
 </ul>
+
+Friday 5/26
+<ul>
+  <li>9 - 5:15, 1 10 minute break and a lunch break, got the rooms to be displayed on the screen, calls w/ Alberto, Marco & Delaney. Fixed styling</li>
+</ul>
