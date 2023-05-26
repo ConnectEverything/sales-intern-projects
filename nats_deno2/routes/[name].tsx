@@ -2,7 +2,7 @@ import { Handler, HandlerContext, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
 import Chat from "../islands/Chat.tsx";
 import { Page } from "../helpers/Page.tsx";
-import { UserMessage, UserView } from "../communication/types.ts";
+import { UserMessage } from "../communication/types.ts";
 
 
 

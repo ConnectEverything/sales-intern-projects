@@ -9,13 +9,13 @@ const js = nc.jetstream();
 // create the named KV or bind to it if it exists:
 const kv = await js.views.kv("roomBucket");
 
-const room1 = {
-  name: "Room Phive"
-}
+// const room1 = {
+//   name: "Room Phive"
+// }
 
-const room2 = {
-  name: "Room Seis"
-}
+// const room2 = {
+//   name: "Room Seis"
+// }
 
 await kv.create("5", jc.encode(room1));
 await kv.create("6", jc.encode(room2));
@@ -46,7 +46,7 @@ const watch = await kv.watch();
       console.log(dcd.name);
     }
   }
-})().then();
+});
 
 
 nc.close();

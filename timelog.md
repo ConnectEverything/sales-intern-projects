@@ -23,6 +23,25 @@ Thursday 5/18
 
 Friday 5/19
 <ul>
-  <li>9 - 5, 2 10 minute breaks and a lunch break</li>
-  <li>7 - 9, Wrote out code for pub/sub functionality for creating rooms, usernames, the actual chat itself. Integrating it into the chat app.</li>
+  <li>9 - 5, 2 10 minute breaks and a lunch break Wrote out code for pub/sub functionality for creating rooms, usernames, the actual chat itself. Integrating it into the chat app.</li>
+</ul>
+
+Monday 5/23
+<ul>
+  <li>9 - 5:45, 2 10 minute breaks and a lunch break, worked on fetching the room names out of the room bucket to display on the main page</li>
+</ul>
+
+Tuesday 5/24
+<ul>
+  <li>9 - 5, 2 10 minute breaks and a lunch break, making fixes to yesterday's work, fixing errors in dev environment, 12:30-1:30 call w/ Marco & Reuben</li>
+</ul>
+
+Wednesday 5/25 
+<ul>
+  <li>9 - 5, 2 10 minute breaks and a lunch break, making fixes to yesterday's work, ran into import error</li>
+</ul>
+
+Thursday 5/25 
+<ul>
+  <li>11 - 6, 1 10 minute break and a lunch break, fixed the import error, but am working on establishing connection to Nats in Fresh</li>
 </ul>

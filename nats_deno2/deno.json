@@ -1,8 +1,8 @@
 {
   "tasks": {
-    "start": "deno run -A --watch=static/,routes/ dev.ts"
+    "start": "deno --unstable run -A --watch=static/,routes/ dev.ts"
   },
-  "importMap": "./import_map.json",
+  "deno.importMap": "./import_map.json",
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "preact"
