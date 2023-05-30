@@ -1,18 +1,19 @@
-import JSONbig from 'https://cdn.skypack.dev/json-bigint';
-import * as nats from "https://deno.land/x/nats/src/mod.ts";
-import { ref, watch } from 'https://cdn.skypack.dev/pin/preact@v10.15.0-DNU3yoh4PRINFbLIjPNW/mode=imports/optimized/preact/hooks.js';
+// nats.ts
 
-// export const natsURL = ref(`ws://${window.location.hostname}:9222`)
-// if (!natsURL) throw new Error('VITE_NATS_URL is not set')
+// import JSONbig from 'https://cdn.skypack.dev/json-bigint';
+import {
+  connect
+} from "../lib/nats.js";
 
 
-let nc = await nats.connect({ 
-  servers: "ws://localhost:4222",
+let nc = await connect({ 
+  servers: "ws://localhost:8080",
 })
-// watch(natsURL, () => {
-//   nc = connect({ servers: [natsURL.value], debug: true })
-//   window.location.reload()
-// })
+
+// const js = await natsJetstreamClient();
+// const roomBucket = await js.views.kv("bucketOfRooms");
+const jsm = await nc.jetstreamManager();
+await jsm.streams.add({ name: "rooms", subjects: ["rooms.*"]});
 
 export async function natsClient() {
   while (!nc) {
@@ -38,12 +39,12 @@ export async function natsObjectStoreClient(bucket: string) {
 
 const enc = new TextEncoder()
 export function encodeToBuf(x: any) {
-  return enc.encode(JSONbig.stringify(x))
+  return enc.encode(JSON.stringify(x))
 }
 
 const dec = new TextDecoder()
 export function decodeFromBuf<T>(buf: Uint8Array) {
   const str = dec.decode(buf)
-  const t: T = JSONbig.parse(str)
+  const t: T = JSON.parse(str) as T;
   return t
 }

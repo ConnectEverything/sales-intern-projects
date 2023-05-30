@@ -50,3 +50,8 @@ Friday 5/26
 <ul>
   <li>9 - 5:15, 1 10 minute break and a lunch break, got the rooms to be displayed on the screen, calls w/ Alberto, Marco & Delaney. Fixed styling</li>
 </ul>
+
+Tuesday 5/30
+<ul>
+  <li>9 - 5, 1 10 minute break and a lunch break, created addRoom functionality, working on JS functionality for each room.</li>
+</ul>

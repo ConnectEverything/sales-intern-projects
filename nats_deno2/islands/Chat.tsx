@@ -1,69 +1,77 @@
-import { useEffect, useReducer, useRef, useState } from "preact/hooks";
-// import twas from "twas";
-// import type { MessageView, UserView } from "../communication/types.ts";
+import { useEffect, useRef, useState } from "preact/hooks";
+import { encodeToBuf, natsKVClient } from "../helpers/nats.ts";
+import {
+  connect,
+  JSONCodec
+} from "../lib/nats.js";
+import { escapeChar } from "https://deno.land/x/code_block_writer@11.0.3/utils/string_utils.ts";
 
-export default function Chat(
-  {roomId, roomName}: {
-    roomId: string;
-    roomName: string;
-  },
-) {
+
+export default function AddRoom() {
+  const [roomName, setRoomName] = useState("");
+  const [roomID, setRoomID] = useState("");
+  const [submit, setSubmit] = useState(false);
+  const isMounted = useRef(false);
+
+
+  useEffect(() => {
+    (async () => {
+      const roomBucket = await natsKVClient("bucketOfRooms");
+      const bucketInfo = await roomBucket.status();
+      const numRooms = await bucketInfo.values; // get number of entries
+      const id = (numRooms + 1).toString(); 
+
+      if (isMounted.current) {
+        // const x = await roomBucket.get(id);
+        // if (x.revision !== 0) {
+        //   throw new Error("")
+        // }
+        // await roomBucket.update(id, encodeToBuf({ name: roomName }), 0)
+        await roomBucket.put(id, encodeToBuf({ name: roomName }))
+      } else {
+        setRoomID(id);
+        isMounted.current = true;
+      }
+      
+    }) ();
+  }, [submit]);
+
   return (
-    <>
-      <div class="w-5/6 md:w-1/2 h-2/3 rounded-2xl mb-5 pl-6 flex flex-col pt-4 pb-2">
-        <div class="h-8 flex-none pl-1 pr-7 mb-16 flex justify-between items-center">
-          <a
-            href="/"
-            class="h-8 w-8 p-2 flex items-center justify-center hover:bg-gray-200 rounded-2xl"
-          >
-            <img src="/arrow.svg" alt="Left Arrow" />
-          </a>
-          <div class="font-medium text-lg">{roomName}</div>
-          <div />
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        setSubmit(!submit);
+        try {
+          location.pathname = "/" + roomID;
+        } catch (err) {
+          alert(`Cannot create room: ${err.message}`);
+        }
+      }}
+    >
+      <label>
+        <div class="mb-2.5">
+          <p class="font-semibold">Name</p>
+          <p class="font-medium text-xs text-gray-500">
+            The name of the chat room.
+          </p>
         </div>
-
-        {/* <div
-          class="flex-auto overflow-y-scroll"
-          ref={messagesContainer}
-        >
-          {messages.map((msg) => <Message message={msg} />)}
-        </div> */}
-
-        {/* <div class="h-6 mt-1">
-          {typing && (
-            <div class="text-sm text-gray-400">
-              <span class="text-gray-800">{typing.user.name}</span> is typing...
-            </div>
-          )}
-        </div> */}
-      </div>
-      <div class="w-5/6 md:w-1/2 h-16 flex-none rounded-full flex items-center">
-        <ChatInput
-          
+        <input
+          class="w-full h-9 rounded-md border border-gray-300 pl-3.5"
+          type="text"
+          name="roomName"
+          id="roomName"
+          value={roomName}
+          onChange={(e) => setRoomName(e.currentTarget.value)}
         />
-      </div>
-    </>
-  );
-}
-
-function ChatInput() {
-  return (
-    <>
-      <input
-        type="text"
-        placeholder="Message"
-        class="block mx-6 w-full bg-transparent outline-none focus:text-gray-700"
-      />
-      <button class="mx-3 p-2 hover:bg-gray-200 rounded-2xl">
-        <svg
-          class="w-5 h-5 text-gray-500 origin-center transform rotate-90"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-        </svg>
+      </label>
+      
+      <button
+        class="mt-7 flex flex items-center rounded-md h-8 py-2 px-4 bg-gray-800 font-medium text-sm text-white"
+        type="submit"
+      >
+        create
       </button>
-    </>
+      
+    </form>
   );
 }
