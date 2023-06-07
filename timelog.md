@@ -48,10 +48,36 @@ Thursday 5/25
 
 Friday 5/26
 <ul>
-  <li>9 - 5:15, 1 10 minute break and a lunch break, got the rooms to be displayed on the screen, calls w/ Alberto, Marco & Delaney. Fixed styling</li>
+  <li>9 - 5:15, 2 10 minute break and a lunch break, got the rooms to be displayed on the screen, calls w/ Alberto, Marco & Delaney. Fixed styling</li>
 </ul>
 
 Tuesday 5/30
 <ul>
-  <li>9 - 5, 1 10 minute break and a lunch break, created addRoom functionality, working on JS functionality for each room.</li>
+  <li>9 - 5, 2 10 minute break and a lunch break, created addRoom functionality, working on JS functionality for each room.</li>
+</ul>
+
+Wednesday 5/31
+<ul>
+  <li>9 - 5, 2 10 minute break and a lunch break, finished JS functionality for the rooms</li>
+</ul>
+
+Thursday 6/1
+<ul>
+  <li>9 - 5, 2 10 minute break and a lunch break, worked on Github auth and room debounce</li>
+</ul>
+
+Friday 6/2
+<ul>
+  <li>11 - 6, 2 10 minute break and a lunch break, worked on Github auth and room debounce</li>
+</ul>
+
+Monday 6/5
+<ul>
+  <li>9 - 5, 2 10 minute break and a lunch break, Finished Github auth and room debounce, working on isTyping & other fixes of the app</li>
+</ul>
+
+Tuesday 6/6
+<ul>
+  <li>9 - 5, 2 10 minute break and a lunch break, Finished isTyping and other misc functions.</li>
+  <li>7 - 8, Call w/ Delaney, made sure the environment worked so others could replicate it, pushed to Github</li>
 </ul>

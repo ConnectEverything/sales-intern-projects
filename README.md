@@ -1,7 +1,4 @@
 # sales-intern-projects
-To get started, setup your `.env` with Github OAuth credentials:
-
-- `cp .env.example .env`
 
 To setup a
 [Github OAuth App](https://developer.github.com/apps/building-oauth-apps/authorizing-oauth-apps)
@@ -12,7 +9,7 @@ To setup a
   `http://localhost:8000`)
 - Set `Authorization callback URL` to
   localhost for development.
-- Add `Client ID` and `Client Secret` in the `.env` file.
+- Change the `Client ID` and `Client Secret` to the IDs of your app in the `.env` file. Right now, those are my credentials. 
 
 Start NATS server. Create server.conf in a vim:
 
