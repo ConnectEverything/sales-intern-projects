@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import { useState } from "preact/hooks";
 import * as nats from "denonats";
 // import * as nats from "https://deno.land/x/nats/src/mod.ts";
@@ -8,7 +9,7 @@ export default function AddRoom() {
 
   return (
     <form
-      onSubmit={async (e) => {
+      onSubmit={async (e: { preventDefault: () => void; }) => {
         e.preventDefault();
         try {
           // // create connection to nats ws server
@@ -49,7 +50,7 @@ export default function AddRoom() {
           name="roomName"
           id="roomName"
           value={roomName}
-          onChange={(e) => setRoomName(e.currentTarget.value)}
+          onChange={(e: { currentTarget: { value: any; }; }) => setRoomName(e.currentTarget.value)}
         />
       </label>
       
