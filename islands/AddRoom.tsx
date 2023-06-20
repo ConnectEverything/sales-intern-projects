@@ -1,54 +1,38 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import { encodeToBuf, natsKVClient } from "../communication/nats.ts";
+import { encodeToBuf, natsKVClient, decodeFromBuf } from "../communication/nats.ts";
 import { escapeChar } from "https://deno.land/x/code_block_writer@11.0.3/utils/string_utils.ts";
 import { roomBucket } from "../communication/nats.ts";
 import { badWordsCleanerLoader } from "../helpers/bad_words.ts"
-import { emojify } from "emojify"
+// import { emojify } from "emojify"
 import { RoomView } from "../communication/types.ts";
+import * as xxhash64 from "https://deno.land/x/xxhash64@1.0.0/mod.ts";
 
 export default function AddRoom() {
   const [roomName, setRoomName] = useState("");
-  const [roomID, setRoomID] = useState("");
-  const [submit, setSubmit] = useState(false);
-  const isMounted = useRef(false);
-
-
-  useEffect(() => {
-    (async () => {
-      const bucketInfo = await roomBucket.status();
-      const numRooms = await bucketInfo.values; // get number of entries
-      const id = (numRooms + 1).toString(); 
-
-      if (isMounted.current) {
-        // const x = await roomBucket.get(id);
-        // if (x.revision !== 0) {
-        //   throw new Error("")
-        // }
-        // await roomBucket.update(id, encodeToBuf({ name: roomName }), 0)
-        const badWordsCleaner = await badWordsCleanerLoader.getInstance();
-        const cleanedRoomName = emojify(badWordsCleaner.clean(roomName))
-
-        const roomMsg: RoomView = {
-          name: roomName,
-          lastMessageAt: "",
-        }
-
-        await roomBucket.put(id, encodeToBuf(roomMsg))
-      } else {
-        setRoomID(id);
-        isMounted.current = true;
-      }
-      
-    }) ();
-  }, [submit]);
 
   return (
     <form
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        setSubmit(!submit);
+        const create = xxhash64.create();
         try {
-          location.pathname = "/" + roomID;
+          const roomHasher = await create;
+          const roomHash = roomHasher.hash(roomName, 'hex');
+
+          const badWordsCleaner = await badWordsCleanerLoader.getInstance();
+          const cleanedRoomName = badWordsCleaner.clean(roomName);
+          const roomMsg: RoomView = {
+            name: cleanedRoomName,
+            lastMessageAt: "",
+          }
+
+          // if room doesn't exist, create it
+          const getRoom = await roomBucket.get(roomHash);
+          if (!getRoom) {
+            await roomBucket.put(roomHash, encodeToBuf(roomMsg));
+          }
+
+          location.pathname = "/" + roomHash;
         } catch (err) {
           alert(`Cannot create room: ${err.message}`);
         }

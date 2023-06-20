@@ -200,6 +200,7 @@
     "https://deno.land/x/ts_morph@17.0.1/mod.ts": "adba9b82f24865d15d2c78ef6074b9a7457011719056c9928c800f130a617c93",
     "https://deno.land/x/ts_morph@17.0.1/ts_morph.d.ts": "a54b0c51b06d84defedf5fdd59c773d803808ae7c9678f7165f7a1a6dfa7f6a3",
     "https://deno.land/x/ts_morph@17.0.1/ts_morph.js": "1bb80284b9e31a4c5c2078cd533fe9b12b4b2d710267055cb655225aa88fb2df",
+    "https://deno.land/x/xxhash64@1.0.0/mod.ts": "8edbe0799cf08420907da03e66128b14a3c92d94c3dd7f5a1af952a788f38d05",
     "https://esm.sh/*preact-render-to-string@5.2.6": "ab350caca56cc0055c06941a4926c339ee321084a9afeeee0ecf9b28b1b931e4",
     "https://esm.sh/preact@10.13.1": "ae382301328ab874e2c42bee76e261bb8d094673fe76ca7eb71917636d43d8ad",
     "https://esm.sh/preact@10.13.1/hooks": "1813f80c6d648f8137a62569e35972b0716f92539f192d6db66d45b7aafea43a",

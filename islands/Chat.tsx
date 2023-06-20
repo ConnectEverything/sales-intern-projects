@@ -11,6 +11,7 @@ import { consumerOpts } from "../lib/nats.js";
 import twas from "https://esm.sh/v121/twas@2.1.2/deno/twas.mjs";
 import { debounce } from "https://deno.land/std@0.178.0/async/debounce.ts";
 import { JSDocMemberName } from "https://deno.land/x/ts_morph@17.0.1/ts_morph.js";
+import { badWordsCleanerLoader } from "../helpers/bad_words.ts"
 
 export default function Chat(
   {roomId, roomName, user}: {
@@ -79,9 +80,11 @@ export default function Chat(
     if (input === "") {
       return;
     }
+    const badWordsCleaner = await badWordsCleanerLoader.getInstance();
+    const cleanedInput = badWordsCleaner.clean(input);
     
     const msgToSend: MessageView = {
-      text: input,
+      text: cleanedInput,
       createdAt: new Date().toISOString(),
       user: {
         name: user.name,
