@@ -1,13 +1,16 @@
 import { useEffect, useReducer, useRef, useState } from "preact/hooks";
-// import twas from "twas";
-// import type { MessageView, UserView } from "../communication/types.ts";
-import type { MessageView, RoomView, UserView } from "../helpers/types.ts";
-import { decodeFromBuf, encodeToBuf, natsJetstreamClient, natsKVClient } from "../helpers/nats.ts";
+import type { MessageView, RoomView, UserView } from "../communication/types.ts";
+import { 
+  decodeFromBuf, 
+  encodeToBuf, 
+  natsJetstreamClient, 
+  natsKVClient,
+  nc, js, roomBucket
+ } from "../communication/nats.ts";
 import { consumerOpts } from "../lib/nats.js";
 import twas from "https://esm.sh/v121/twas@2.1.2/deno/twas.mjs";
 import { debounce } from "https://deno.land/std@0.178.0/async/debounce.ts";
 import { JSDocMemberName } from "https://deno.land/x/ts_morph@17.0.1/ts_morph.js";
-import { nc, js, roomBucket } from "../helpers/nats.ts"
 
 export default function Chat(
   {roomId, roomName, user}: {

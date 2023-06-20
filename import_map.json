@@ -10,6 +10,7 @@
     "twind/": "https://esm.sh/twind@0.16.19/",
     "crypto": "https://raw.githubusercontent.com/nats-io/nkeys.js/v1.0.4/modules/esm/nacl.js",
     "twas": "https://esm.sh/twas@2.1.2",
-    "$std/": "https://deno.land/std@0.144.0/"
+    "$std/": "https://deno.land/std@0.144.0/",
+    "emojify": "https://esm.sh/@twuni/emojify@1.0.2"
   }
 }

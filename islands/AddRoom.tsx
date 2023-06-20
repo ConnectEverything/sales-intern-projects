@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import { encodeToBuf, natsKVClient } from "../helpers/nats.ts";
-import {
-  connect,
-  JSONCodec
-} from "../lib/nats.js";
+import { encodeToBuf, natsKVClient } from "../communication/nats.ts";
 import { escapeChar } from "https://deno.land/x/code_block_writer@11.0.3/utils/string_utils.ts";
-import { roomBucket } from "../helpers/nats.ts";
-import { RoomView } from "../helpers/types.ts";
+import { roomBucket } from "../communication/nats.ts";
+import { badWordsCleanerLoader } from "../helpers/bad_words.ts"
+import { emojify } from "emojify"
+import { RoomView } from "../communication/types.ts";
 
 export default function AddRoom() {
   const [roomName, setRoomName] = useState("");
@@ -27,6 +25,9 @@ export default function AddRoom() {
         //   throw new Error("")
         // }
         // await roomBucket.update(id, encodeToBuf({ name: roomName }), 0)
+        const badWordsCleaner = await badWordsCleanerLoader.getInstance();
+        const cleanedRoomName = emojify(badWordsCleaner.clean(roomName))
+
         const roomMsg: RoomView = {
           name: roomName,
           lastMessageAt: "",
