@@ -4,7 +4,7 @@ import Chat from "../islands/Chat.tsx";
 import { Page } from "../helpers/Page.tsx";
 import { decodeFromBuf, natsJetstreamClient, natsKVClient, roomBucket } from "../communication/nats.ts";
 import { consumerOpts } from "../lib/nats.js";
-import type { RoomView, MessageView, UserView } from "../helpers/types.ts";
+import type { RoomView, MessageView, UserView } from "../communication/types.ts";
 import { libFolderInMemoryPath } from "https://deno.land/x/ts_morph@17.0.1/common/ts_morph_common.js";
 import { getCookies } from "https://deno.land/std@0.144.0/http/cookie.ts";
 import { gitHubApi } from "../helpers/github.ts";

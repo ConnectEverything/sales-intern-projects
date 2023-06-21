@@ -1,29 +1,18 @@
-// nats.ts
-
-// import JSONbig from 'https://cdn.skypack.dev/json-bigint';
 import {
   connect,
   credsAuthenticator,
   jwtAuthenticator
 } from "../lib/nats.js";
+// const creds = await Deno.readTextFile('/Users/collintogher/.local/share/nats/nsc/keys/creds/synadia/angry_johnson/default.creds')
+// console.log(creds);
 
-const creds=`-----BEGIN NATS USER JWT-----
-eyJ0eXAiOiJKV1QiLCJhbGciOiJlZDI1NTE5LW5rZXkifQ.eyJqdGkiOiI0NDJON1VUUzNISlRVSjczTklKSlZSR0tKUU80R1A3QUg3Uk1SNkNUQUtRNEs3VU5UNzZBIiwiaWF0IjoxNjg3MjkyOTcxLCJpc3MiOiJBQVAzRFhCQjdKMlo1T01WQTZZVVE0UEhKTTY0UDZGTEtYM1hGVVJGR0Y1RE41UzRYNVk1WENFRyIsIm5hbWUiOiJkZWZhdWx0Iiwic3ViIjoiVUNEVFU3T1lXN0JNWFhDTFQ3UTM2UUdESFhIWkg2R01HVk5ES0FSSjUzNkNDWlhHVTdFTUxTNE0iLCJuYXRzIjp7InB1YiI6e30sInN1YiI6e30sInN1YnMiOi0xLCJkYXRhIjotMSwicGF5bG9hZCI6LTEsInR5cGUiOiJ1c2VyIiwidmVyc2lvbiI6Mn19.fwC6HXNFhS3-hDeDLOnXK5Io7GvCEOJgAuSbEr_3A0_qD8dB92qNFiA4xoUMQIXjiGnRsE9DmbJgsnoapGvfDg
-------END NATS USER JWT------
 
-************************* IMPORTANT *************************
-NKEY Seed printed below can be used to sign and prove identity.
-NKEYs are sensitive and should be treated as secrets.
-
------BEGIN USER NKEY SEED----- 
-SUAHT3XSGWHCWFFQEIC6JHZZPQLMEFM7CPZSZ6O2HYYJVU6J7RM7LCO52Y
-------END USER NKEY SEED------
-
-*************************************************************`
 const nc = await connect({ 
   servers: 'wss://connect.ngs.global',
-  authenticator: jwtAuthenticator(Deno.env.get('jwt'), new TextEncoder().encode(Deno.env.get('seed')))
   // authenticator: credsAuthenticator(new TextEncoder().encode(creds))
+  // authenticator: jwtAuthenticator(Deno.env.get('jwt'), new TextEncoder().encode(Deno.env.get('seed')))
+  authenticator: jwtAuthenticator("eyJ0eXAiOiJKV1QiLCJhbGciOiJlZDI1NTE5LW5rZXkifQ.eyJqdGkiOiI0NDJON1VUUzNISlRVSjczTklKSlZSR0tKUU80R1A3QUg3Uk1SNkNUQUtRNEs3VU5UNzZBIiwiaWF0IjoxNjg3MjkyOTcxLCJpc3MiOiJBQVAzRFhCQjdKMlo1T01WQTZZVVE0UEhKTTY0UDZGTEtYM1hGVVJGR0Y1RE41UzRYNVk1WENFRyIsIm5hbWUiOiJkZWZhdWx0Iiwic3ViIjoiVUNEVFU3T1lXN0JNWFhDTFQ3UTM2UUdESFhIWkg2R01HVk5ES0FSSjUzNkNDWlhHVTdFTUxTNE0iLCJuYXRzIjp7InB1YiI6e30sInN1YiI6e30sInN1YnMiOi0xLCJkYXRhIjotMSwicGF5bG9hZCI6LTEsInR5cGUiOiJ1c2VyIiwidmVyc2lvbiI6Mn19.fwC6HXNFhS3-hDeDLOnXK5Io7GvCEOJgAuSbEr_3A0_qD8dB92qNFiA4xoUMQIXjiGnRsE9DmbJgsnoapGvfDg", 
+  new TextEncoder().encode('SUAHT3XSGWHCWFFQEIC6JHZZPQLMEFM7CPZSZ6O2HYYJVU6J7RM7LCO52Y'))
  })
 
 const js = await natsJetstreamClient();

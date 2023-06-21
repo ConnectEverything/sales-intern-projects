@@ -1,7 +1,7 @@
 import { useState, useEffect } from "https://esm.sh/preact@10.13.1/hooks";
 import { decodeFromBuf, natsKVClient, roomBucket } from "../communication/nats.ts";
 import twas from "https://esm.sh/v121/twas@2.1.2/deno/twas.mjs";
-import type { RoomView } from "../helpers/types.ts";
+import type { RoomView } from "../communication/types.ts";
 // download npm module for nats.ws
 
 export default function Connect() {

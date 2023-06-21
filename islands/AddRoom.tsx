@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import { encodeToBuf, natsKVClient, decodeFromBuf } from "../communication/nats.ts";
+import { encodeToBuf, natsKVClient, decodeFromBuf, roomBucket } from "../communication/nats.ts";
 import { escapeChar } from "https://deno.land/x/code_block_writer@11.0.3/utils/string_utils.ts";
-import { roomBucket } from "../communication/nats.ts";
+
 import { badWordsCleanerLoader } from "../helpers/bad_words.ts"
 // import { emojify } from "emojify"
 import { RoomView } from "../communication/types.ts";
