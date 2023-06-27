@@ -81,3 +81,28 @@ Tuesday 6/6
   <li>9 - 5, 2 10 minute break and a lunch break, Finished isTyping and other misc functions.</li>
   <li>7 - 8, Call w/ Delaney, made sure the environment worked so others could replicate it, pushed to Github</li>
 </ul>
+
+Tuesday 6/20
+<ul>
+  <li>9 - 5, 2 10 minute break and a lunch break</li>
+</ul>
+
+Wednesday 6/21
+<ul>
+  <li>9 - 5, 2 10 minute break and a lunch break</li>
+</ul>
+
+Thursday 6/22
+<ul>
+  <li>9 - 5, 2 10 minute break and a lunch break,</li>
+</ul>
+
+Friday 6/23
+<ul>
+  <li>9 - 5, 2 10 minute break and a lunch break</li>
+</ul>
+
+Monday 6/26
+<ul>
+  <li>9 - 5, 2 10 minute break and a lunch break</li>
+</ul>

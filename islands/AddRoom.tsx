@@ -1,9 +1,6 @@
-import { useEffect, useRef, useState } from "preact/hooks";
-import { encodeToBuf, natsKVClient, decodeFromBuf, roomBucket } from "../communication/nats.ts";
-import { escapeChar } from "https://deno.land/x/code_block_writer@11.0.3/utils/string_utils.ts";
-
+import { useState } from "preact/hooks";
+import { encodeToBuf, natsCon } from "../communication/nats.ts";
 import { badWordsCleanerLoader } from "../helpers/bad_words.ts"
-// import { emojify } from "emojify"
 import { RoomView } from "../communication/types.ts";
 import * as xxhash64 from "https://deno.land/x/xxhash64@1.0.0/mod.ts";
 
@@ -17,7 +14,7 @@ export default function AddRoom() {
         const create = xxhash64.create();
         try {
           const roomHasher = await create;
-          const roomHash = roomHasher.hash(roomName, 'hex');
+          const roomHash = roomHasher.hash(roomName, 'hex').toString();
 
           const badWordsCleaner = await badWordsCleanerLoader.getInstance();
           const cleanedRoomName = badWordsCleaner.clean(roomName);
@@ -25,6 +22,7 @@ export default function AddRoom() {
             name: cleanedRoomName,
             lastMessageAt: "",
           }
+          const roomBucket = await natsCon.getKVClient();
 
           // if room doesn't exist, create it
           const getRoom = await roomBucket.get(roomHash);

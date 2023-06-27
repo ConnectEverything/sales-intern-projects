@@ -1,5 +1,3 @@
-// import { deleteCookie } from "$std/http/cookie.ts";
-
 import { deleteCookie } from "https://deno.land/std@0.144.0/http/cookie.ts";
 
 export function handler(req: Request): Response {

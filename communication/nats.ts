@@ -1,40 +1,7 @@
 import {
-  connect,
+  connect, jwtAuthenticator
 } from "../lib/nats.js";
-
-
-const nc = await connect({ 
-  servers: 'wss://demo.nats.io:8443',
- })
-
-const js = await natsJetstreamClient();
-const jsm = await nc.jetstreamManager();
-await jsm.streams.add({ name: "rooms", subjects: ["rooms.*"], max_bytes: 1000000});
-const roomBucket = await js.views.kv("bucketOfRooms", { maxBucketSize: 10000000, maxValueSize: 131072 });
-
-export { nc, js, roomBucket };
-
-export async function natsClient() {
-  while (!nc) {
-    await new Promise(resolve => setTimeout(resolve, 10))
-  }
-  return nc
-}
-
-export async function natsJetstreamClient() {
-  const nc = await natsClient()
-  return nc.jetstream()
-}
-
-export async function natsKVClient(bucket: string) {
-  const js = await natsJetstreamClient()
-  return js.views.kv(bucket)
-}
-
-export async function natsObjectStoreClient(bucket: string) {
-  const js = await natsJetstreamClient()
-  return js.views.os(bucket)
-}
+import type { NatsConnection, JetStreamClient, KV } from "https://deno.land/x/nats/src/mod.ts";
 
 const enc = new TextEncoder()
 export function encodeToBuf(x: any) {
@@ -47,3 +14,44 @@ export function decodeFromBuf<T>(buf: Uint8Array) {
   const t: T = JSON.parse(str) as T;
   return t
 }
+
+export class NatsCon {
+  nc!: NatsConnection
+  js!: JetStreamClient
+  roomBucket!: KV
+
+  async createConnection() {
+    if (!this.nc) {
+      const res = await fetch('/api/creds');
+      const { jwt, seed } = await res.json();
+
+      this.nc = await connect({ 
+        servers: 'wss://connect.ngs.global',
+        authenticator: jwtAuthenticator(jwt, new TextEncoder().encode(seed))
+      })
+
+      const jsm = await this.nc.jetstreamManager();
+      await jsm.streams.add({ name: "rooms", subjects: ["rooms.*"], max_bytes: 1000000});
+    }
+
+    return this.nc
+  }
+
+  async getJetstreamClient() {
+    if (!this.js) {
+      const nc = await this.createConnection();
+      this.js = await nc.jetstream();
+    }
+    return this.js
+  }
+
+  async getKVClient() {
+    if (!this.roomBucket) {
+      const js = await this.getJetstreamClient();
+      this.roomBucket = await js.views.kv("bucketOfRooms", { maxBucketSize: 10000000, maxValueSize: 131072 });
+    }
+    return this.roomBucket
+  }
+}
+
+export const natsCon = new NatsCon();

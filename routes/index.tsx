@@ -1,10 +1,11 @@
 import { Head } from "$fresh/runtime.ts";
-import { useEffect, useState } from "preact/hooks";
 import { HandlerContext, PageProps } from "$fresh/server.ts";
 import Rooms from "../islands/Rooms.tsx";
 import { Footer } from "../helpers/Footer.tsx";
 import { gitHubApi } from "../helpers/github.ts";
 import { getCookies, setCookie } from "https://deno.land/std@0.144.0/http/cookie.ts";
+import { createUser } from "https://deno.land/x/nkeys.js/modules/esm/mod.ts";
+import { encodeUser }from "https://raw.githubusercontent.com/nats-io/jwt.js/main/src/jwt.ts";
 
 export async function handler(
   req: Request,
@@ -23,8 +24,33 @@ export async function handler(
   }
   
   const accessToken = await gitHubApi.getAccessToken(code);
+  const userData = await gitHubApi.getUserData(accessToken);
+
+  const accountSeed = Deno.env.get("ACCOUNT_SEED");
+  const natsUser = createUser();
+  const userSeed = new TextDecoder().decode(natsUser.getSeed());
+  let jwt = "a";
+  if (accountSeed) {
+    jwt = await encodeUser(userData.userName, natsUser, accountSeed);
+  } else {
+    return ctx.render({})
+  }
   
   const response = await ctx.render({})
+  setCookie(response.headers, {
+    name: "user_jwt",
+    value: jwt,
+    maxAge: 60 * 60 * 24 * 7,
+    httpOnly: true,
+  });
+
+  setCookie(response.headers, {
+    name: "user_seed",
+    value: userSeed,
+    maxAge: 60 * 60 * 24 * 7,
+    httpOnly: true,
+  });
+  
   setCookie(response.headers, {
     name: "deploy_chat_token",
     value: accessToken,

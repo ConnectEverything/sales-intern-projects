@@ -1,17 +1,14 @@
-import { useEffect, useReducer, useRef, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import type { MessageView, RoomView, UserView } from "../communication/types.ts";
 import { 
   decodeFromBuf, 
   encodeToBuf, 
-  natsJetstreamClient, 
-  natsKVClient,
-  nc, js, roomBucket
+  natsCon
  } from "../communication/nats.ts";
 import { consumerOpts } from "../lib/nats.js";
 import twas from "https://esm.sh/v121/twas@2.1.2/deno/twas.mjs";
-import { debounce } from "https://deno.land/std@0.178.0/async/debounce.ts";
-import { JSDocMemberName } from "https://deno.land/x/ts_morph@17.0.1/ts_morph.js";
 import { badWordsCleanerLoader } from "../helpers/bad_words.ts"
+import { JetStreamClient, NatsConnection, KV } from "https://deno.land/x/nats@v1.13.0/nats-base-client/mod.ts";
 
 export default function Chat(
   {roomId, roomName, user}: {
@@ -23,6 +20,10 @@ export default function Chat(
   const [messages, setMessages] = useState<MessageView[]>([]);
   const [input, setInput] = useState("");
   const subject = useRef("rooms." + roomId)
+  const nc = useRef<NatsConnection | null>();
+  const js = useRef<JetStreamClient | null>();
+  const roomBucket = useRef<KV | null>();
+
   const lastMsgTimeout = useRef<number | null>(null);
   const [inputTimer, setInputTimer] = useState<number | null>(null);
   const messagesContainer = useRef<HTMLDivElement>(null);
@@ -30,10 +31,19 @@ export default function Chat(
 
   useEffect(() => {
     (async () => {
+      console.log("Consuming the room: " + nc.current);
+      if (!nc.current) {
+        nc.current = await natsCon.createConnection();
+      }
+
+      if (!js.current) {
+        js.current = await natsCon.getJetstreamClient();
+      }
+      
       const opts = consumerOpts();
       opts.orderedConsumer();
 
-      const sub = await js.subscribe(subject.current, opts);
+      const sub = await js.current.subscribe(subject.current, opts);
       for await (const msg of sub) {
         const msgText = decodeFromBuf<MessageView>(msg.data);
         
@@ -48,7 +58,11 @@ export default function Chat(
   useEffect(() => {
     // use normal pub/sub for the isTyping
     (async () => {
-      const isTypingSub = await nc.subscribe("isTyping." + roomId);
+      console.log("Subscribing to isTyping: " + nc.current);
+      if (!nc.current) {
+        nc.current = await natsCon.createConnection();
+      }
+      const isTypingSub = await nc.current.subscribe("isTyping." + roomId);
       for await (const msg of isTypingSub) { 
         const userTyping = decodeFromBuf<string>(msg.data);
         setTyper(userTyping);
@@ -71,7 +85,11 @@ export default function Chat(
     }
 
     setInputTimer(setTimeout(async () => {
-      await nc.publish("isTyping." + roomId, encodeToBuf(""));
+      console.log("Sending isTyping ' ': " + nc.current);
+      if (!nc.current) {
+        nc.current = await natsCon.createConnection();
+      }
+      await nc.current.publish("isTyping." + roomId, encodeToBuf(""));
     }, 2000))
   }, [input])
   
@@ -93,7 +111,12 @@ export default function Chat(
     }
 
     try {
-      await js.publish(subject.current, encodeToBuf(msgToSend));
+      console.log("Sending a chat message: " + js.current);
+      if (!js.current) {
+        js.current = await natsCon.getJetstreamClient();
+      }
+
+      await js.current.publish(subject.current, encodeToBuf(msgToSend));
       
       if (lastMsgTimeout.current) {
         clearTimeout(lastMsgTimeout.current);
@@ -105,7 +128,10 @@ export default function Chat(
           lastMessageAt: msgToSend.createdAt,
         }
 
-        await roomBucket.update(roomId, encodeToBuf(roomUpdate));
+        if (!roomBucket.current) {
+          roomBucket.current = await natsCon.getKVClient();
+        }
+        await roomBucket.current.put(roomId, encodeToBuf(roomUpdate));
         lastMsgTimeout.current = null;
       }, 5000);
 
@@ -119,7 +145,11 @@ export default function Chat(
   const sendIsTyping = async () => {
     // send a msg every 5 characters
     if(input.length % 5 === 0 && input !== ""){
-      await nc.publish("isTyping." + roomId, encodeToBuf(user.name));
+      console.log("sending normal isTyping: " + nc.current)
+      if (!nc.current) {
+        nc.current = await natsCon.createConnection();
+      }
+      await nc.current.publish("isTyping." + roomId, encodeToBuf(user.name));
     }
   }
 
