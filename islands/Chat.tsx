@@ -31,7 +31,6 @@ export default function Chat(
 
   useEffect(() => {
     (async () => {
-      console.log("Consuming the room: " + nc.current);
       if (!nc.current) {
         nc.current = await natsCon.createConnection();
       }
@@ -58,7 +57,6 @@ export default function Chat(
   useEffect(() => {
     // use normal pub/sub for the isTyping
     (async () => {
-      console.log("Subscribing to isTyping: " + nc.current);
       if (!nc.current) {
         nc.current = await natsCon.createConnection();
       }
@@ -85,7 +83,6 @@ export default function Chat(
     }
 
     setInputTimer(setTimeout(async () => {
-      console.log("Sending isTyping ' ': " + nc.current);
       if (!nc.current) {
         nc.current = await natsCon.createConnection();
       }
@@ -111,7 +108,6 @@ export default function Chat(
     }
 
     try {
-      console.log("Sending a chat message: " + js.current);
       if (!js.current) {
         js.current = await natsCon.getJetstreamClient();
       }
@@ -145,7 +141,6 @@ export default function Chat(
   const sendIsTyping = async () => {
     // send a msg every 5 characters
     if(input.length % 5 === 0 && input !== ""){
-      console.log("sending normal isTyping: " + nc.current)
       if (!nc.current) {
         nc.current = await natsCon.createConnection();
       }
