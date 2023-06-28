@@ -20,9 +20,9 @@ export default function Chat(
   const [messages, setMessages] = useState<MessageView[]>([]);
   const [input, setInput] = useState("");
   const subject = useRef("rooms." + roomId)
-  const nc = useRef<NatsConnection | null>();
-  const js = useRef<JetStreamClient | null>();
-  const roomBucket = useRef<KV | null>();
+  const nc = useRef<NatsConnection>();
+  const js = useRef<JetStreamClient>();
+  const roomBucket = useRef<KV>();
 
   const lastMsgTimeout = useRef<number | null>(null);
   const [inputTimer, setInputTimer] = useState<number | null>(null);
@@ -31,6 +31,7 @@ export default function Chat(
 
   useEffect(() => {
     (async () => {
+      console.log("Before displaying chat messages: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
       if (!nc.current) {
         nc.current = await natsCon.createConnection();
       }
@@ -51,6 +52,7 @@ export default function Chat(
           return newMsgs;
         });
       }
+      console.log("After displaying chat messages: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
     }) ();
   }, [])
 

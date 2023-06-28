@@ -33,6 +33,7 @@ export const handler: Handler<Data> = async (
   // get room name
   const roomID = ctx.params.room;
 
+  console.log("Before getting room data: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
   const nc: NatsConnection = await connect({ 
     servers: 'wss://connect.ngs.global',
     authenticator: jwtAuthenticator(jwt, new TextEncoder().encode(seed))
@@ -48,6 +49,8 @@ export const handler: Handler<Data> = async (
   const roomData = decodeFromBuf<RoomView>(roomVal.value);
 
   nc.close();
+
+  console.log("After getting room data: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
   
   return ctx.render({
     roomID: roomID,

@@ -13,6 +13,7 @@ export default function AddRoom() {
         e.preventDefault();
         const create = xxhash64.create();
         try {
+          console.log("Before creating a room: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
           const roomHasher = await create;
           const roomHash = roomHasher.hash(roomName, 'hex').toString();
 
@@ -29,7 +30,7 @@ export default function AddRoom() {
           if (!getRoom) {
             await roomBucket.put(roomHash, encodeToBuf(roomMsg));
           }
-
+          console.log("After creating a room: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
           location.pathname = "/" + roomHash;
         } catch (err) {
           alert(`Cannot create room: ${err.message}`);

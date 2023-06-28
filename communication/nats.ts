@@ -1,7 +1,7 @@
 import {
   connect, jwtAuthenticator
 } from "../lib/nats.js";
-import type { NatsConnection, JetStreamClient, KV } from "https://deno.land/x/nats/src/mod.ts";
+import type { NatsConnection, JetStreamClient, KV } from "https://deno.land/x/nats@v1.13.0/src/mod.ts";
 
 const enc = new TextEncoder()
 export function encodeToBuf(x: any) {

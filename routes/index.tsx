@@ -4,7 +4,7 @@ import Rooms from "../islands/Rooms.tsx";
 import { Footer } from "../helpers/Footer.tsx";
 import { gitHubApi } from "../helpers/github.ts";
 import { getCookies, setCookie } from "https://deno.land/std@0.144.0/http/cookie.ts";
-import { createUser } from "https://deno.land/x/nkeys.js/modules/esm/mod.ts";
+import { createUser } from "https://deno.land/x/nkeys.js@v1.0.5/modules/esm/mod.ts";
 import { encodeUser }from "https://raw.githubusercontent.com/nats-io/jwt.js/main/src/jwt.ts";
 
 export async function handler(
@@ -12,6 +12,7 @@ export async function handler(
   ctx: HandlerContext,
 ): Promise<Response> {
   // This is an oauth callback request.
+  console.log("Before running index handler: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
   const maybeAccessToken = getCookies(req.headers)["deploy_chat_token"];
   if (maybeAccessToken) {
     return ctx.render({});
@@ -57,6 +58,7 @@ export async function handler(
     maxAge: 60 * 60 * 24 * 7,
     httpOnly: true,
   });
+  console.log("After running index handler: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
 
   return response;
 }
