@@ -23,6 +23,8 @@ export default function AddRoom() {
             name: cleanedRoomName,
             lastMessageAt: "",
           }
+
+          console.log("Natscon beginning: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
           const roomBucket = await natsCon.getKVClient();
 
           // if room doesn't exist, create it
@@ -30,6 +32,9 @@ export default function AddRoom() {
           if (!getRoom) {
             await roomBucket.put(roomHash, encodeToBuf(roomMsg));
           }
+          natsCon.drain();
+          console.log("nats con in addroom drained");
+          
           console.log("After creating a room: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
           location.pathname = "/" + roomHash;
         } catch (err) {

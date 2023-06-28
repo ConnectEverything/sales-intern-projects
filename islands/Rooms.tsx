@@ -11,8 +11,10 @@ export default function Connect() {
       console.log("Before showing rooms: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
       
       const roomBucket = await natsCon.getKVClient();
+      console.log("Connecting to roombucket: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
 
       const watch = await roomBucket.watch();
+      console.log("Roombucket watch: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
 
       for await (const msg of watch) {
         if (msg.operation != "DEL") {
@@ -24,10 +26,15 @@ export default function Connect() {
             newRooms[roomID] = msgValue;
             return newRooms;
           });
+          console.log("Showing roombucket: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
         }
       }
 
-      console.log("After showing rooms: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
+      return () => {
+        console.log("nats con in rooms drained");
+        
+        natsCon.drain();
+      }
     }) ();
   }, [])
 

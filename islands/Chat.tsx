@@ -31,29 +31,43 @@ export default function Chat(
 
   useEffect(() => {
     (async () => {
-      console.log("Before displaying chat messages: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
+      console.log("First chat render: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
+      
       if (!nc.current) {
+        console.log("Before connecting to nc: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
         nc.current = await natsCon.createConnection();
+        console.log("Connecting to nc: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
       }
 
       if (!js.current) {
+        console.log("Before js client: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
         js.current = await natsCon.getJetstreamClient();
+        console.log("After js client: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
       }
-      
+
+      console.log("Before subscribing to chat messages: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
       const opts = consumerOpts();
       opts.orderedConsumer();
 
       const sub = await js.current.subscribe(subject.current, opts);
+      console.log("After subbing to chat msgs: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
       for await (const msg of sub) {
         const msgText = decodeFromBuf<MessageView>(msg.data);
+        console.log("Reading msgs from subscription: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
+        
         
         setMessages(prevMessages => {
           const newMsgs = [ ...prevMessages, msgText ];
           return newMsgs;
         });
       }
-      console.log("After displaying chat messages: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
     }) ();
+
+    return () => {
+      console.log("nats connection in chat drained");
+      
+      natsCon.drain();
+    }
   }, [])
 
   useEffect(() => {

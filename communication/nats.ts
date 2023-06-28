@@ -52,6 +52,12 @@ export class NatsCon {
     }
     return this.roomBucket
   }
+
+  drain() {
+    if (this.nc) {
+      this.nc.drain();
+    }
+  }
 }
 
 export const natsCon = new NatsCon();
