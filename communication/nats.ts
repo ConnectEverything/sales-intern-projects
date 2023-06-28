@@ -15,16 +15,12 @@ export function decodeFromBuf<T>(buf: Uint8Array) {
   return t
 }
 
-console.log("nats.ts is running again");
-
 export class NatsCon {
   nc!: NatsConnection
   js!: JetStreamClient
   roomBucket!: KV
 
   async createConnection() {
-    console.log("This is what nc is in natsCon: " + this.nc);
-    
     if (!this.nc) {
       const res = await fetch('/api/creds');
       const { jwt, seed } = await res.json();
@@ -42,7 +38,6 @@ export class NatsCon {
   }
 
   async getJetstreamClient() {
-    console.log("This is what js is in natsCon: " + this.js);
     if (!this.js) {
       const nc = await this.createConnection();
       this.js = await nc.jetstream();
@@ -51,7 +46,6 @@ export class NatsCon {
   }
 
   async getKVClient() {
-    console.log("This is what roomBucket is in natsCon: " + this.roomBucket);
     if (!this.roomBucket) {
       const js = await this.getJetstreamClient();
       this.roomBucket = await js.views.kv("bucketOfRooms", { maxBucketSize: 10000000, maxValueSize: 131072 });
