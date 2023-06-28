@@ -29,13 +29,13 @@ export default function Connect() {
           console.log("Showing roombucket: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
         }
       }
-
-      return () => {
-        console.log("nats con in rooms drained");
-        
-        natsCon.drain();
-      }
     }) ();
+
+    return () => {
+      console.log("nats con in rooms drained");
+      
+      natsCon.drain();
+    }
   }, [])
 
 
