@@ -4,10 +4,10 @@ import Chat from "../islands/Chat.tsx";
 import { Page } from "../helpers/Page.tsx";
 import { decodeFromBuf } from "../communication/nats.ts";
 import { connect, jwtAuthenticator } from "../lib/nats.js";
-import type { RoomView, UserView } from "../communication/types.ts";
+import type { MessageView, RoomView, UserView } from "../communication/types.ts";
 import { getCookies } from "https://deno.land/std@0.144.0/http/cookie.ts";
 import { gitHubApi } from "../helpers/github.ts";
-import { NatsConnection } from "https://deno.land/x/nats@v1.13.0/nats-base-client/mod.ts";
+import { NatsConnection, consumerOpts } from "https://deno.land/x/nats@v1.13.0/nats-base-client/mod.ts";
 
 
 
@@ -15,6 +15,7 @@ interface Data {
   roomID: string;
   room: RoomView;
   user: UserView;
+  initialMessages: MessageView[];
 }
 
 export const handler: Handler<Data> = async (
@@ -41,12 +42,21 @@ export const handler: Handler<Data> = async (
   const js = await nc.jetstream();
   const roomBucket = await js.views.kv("bucketOfRooms", { maxBucketSize: 10000000, maxValueSize: 131072 });
   
-  
   const roomVal = await roomBucket.get(roomID);
   if (!roomVal) {
     return new Response('Room data unavailable', { status: 400 });
   }
   const roomData = decodeFromBuf<RoomView>(roomVal.value);
+
+  const opts = consumerOpts();
+  opts.orderedConsumer();
+  
+  let chatmsgs: MessageView[] = []
+  const sub = await js.subscribe("rooms." + roomID, opts);
+  for await (const msg of sub) {
+    const msgText = decodeFromBuf<MessageView>(msg.data);
+    chatmsgs.push(msgText);
+  }
 
   nc.close();
 
@@ -61,7 +71,8 @@ export const handler: Handler<Data> = async (
     user: {
       name: userData.userName,
       avatarURL: userData.avatarUrl
-    }
+    },
+    initialMessages: chatmsgs
   });
 };
 
@@ -76,6 +87,7 @@ export default function Room({ data }: PageProps<Data>) {
           roomId={data.roomID}
           roomName={data.room.name}
           user={data.user}
+          initialMessages={data.initialMessages}
         />
       </Page>
     </>

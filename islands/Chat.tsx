@@ -11,13 +11,14 @@ import { badWordsCleanerLoader } from "../helpers/bad_words.ts"
 import { JetStreamClient, NatsConnection, KV } from "https://deno.land/x/nats@v1.13.0/nats-base-client/mod.ts";
 
 export default function Chat(
-  {roomId, roomName, user}: {
+  {roomId, roomName, user, initialMessages}: {
     roomId: string;
     roomName: string;
     user: UserView;
+    initialMessages: MessageView[]
   },
 ) {
-  const [messages, setMessages] = useState<MessageView[]>([]);
+  const [messages, setMessages] = useState<MessageView[]>(initialMessages);
   const [input, setInput] = useState("");
   const subject = useRef("rooms." + roomId)
   const nc = useRef<NatsConnection>();
@@ -39,23 +40,11 @@ export default function Chat(
         console.log("Connecting to nc: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
       }
 
-      if (!js.current) {
-        console.log("Before js client: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
-        js.current = await natsCon.getJetstreamClient();
-        console.log("After js client: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
-      }
-
-      console.log("Before subscribing to chat messages: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
-      const opts = consumerOpts();
-      opts.orderedConsumer();
-
-      const sub = await js.current.subscribe(subject.current, opts);
+      const sub = await nc.current.subscribe(subject.current);
       console.log("After subbing to chat msgs: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
       for await (const msg of sub) {
         const msgText = decodeFromBuf<MessageView>(msg.data);
-        console.log("Reading msgs from subscription: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
-        
-        
+
         setMessages(prevMessages => {
           const newMsgs = [ ...prevMessages, msgText ];
           return newMsgs;

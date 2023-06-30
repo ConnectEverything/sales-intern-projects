@@ -11,7 +11,7 @@ export function Footer() {
 
       <a
         class="font-bold flex justify-start items-center cursor-pointer gap-1 hover:underline focus:underline"
-        href="https://github.com/denoland/showcase_chat"
+        href="https://github.com/ConnectEverything/sales-intern-projects"
         rel="noopener noreferrer"
         target="_blank"
       >

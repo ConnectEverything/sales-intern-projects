@@ -60,4 +60,5 @@ export class NatsCon {
   }
 }
 
+
 export const natsCon = new NatsCon();
