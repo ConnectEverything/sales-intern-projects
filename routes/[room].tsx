@@ -8,6 +8,7 @@ import type { MessageView, RoomView, UserView } from "../communication/types.ts"
 import { getCookies } from "https://deno.land/std@0.144.0/http/cookie.ts";
 import { gitHubApi } from "../helpers/github.ts";
 import { NatsConnection, consumerOpts } from "https://deno.land/x/nats@v1.13.0/nats-base-client/mod.ts";
+import { libFolderInMemoryPath } from "https://deno.land/x/ts_morph@17.0.1/common/ts_morph_common.js";
 
 
 
@@ -23,6 +24,7 @@ export const handler: Handler<Data> = async (
   ctx: HandlerContext<Data>,
 ): Promise<Response> => {
   // Get cookie from request header and parse it
+  console.log("Beginning of room handler: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
   const accessToken = getCookies(req.headers)["deploy_chat_token"];
   const jwt = getCookies(req.headers)["user_jwt"];
   const seed = getCookies(req.headers)["user_seed"];
@@ -34,7 +36,6 @@ export const handler: Handler<Data> = async (
   // get room name
   const roomID = ctx.params.room;
 
-  console.log("Before getting room data: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
   const nc: NatsConnection = await connect({ 
     servers: 'wss://connect.ngs.global',
     authenticator: jwtAuthenticator(jwt, new TextEncoder().encode(seed))
@@ -51,13 +52,20 @@ export const handler: Handler<Data> = async (
   const opts = consumerOpts();
   opts.orderedConsumer();
   
+  console.log("Before chatmsgs: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
   let chatmsgs: MessageView[] = []
   const sub = await js.subscribe("rooms." + roomID, opts);
+  console.log("Subscibed");
+  sub.unsubscribe();
+  
   for await (const msg of sub) {
+    console.log("getting the msgs");
+    
     const msgText = decodeFromBuf<MessageView>(msg.data);
     chatmsgs.push(msgText);
   }
-
+  
+  console.log("Right before closing " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
   nc.close();
 
   console.log("After getting room data: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());

@@ -24,7 +24,7 @@ export class NatsCon {
     if (!this.nc) {
       const res = await fetch('/api/creds');
       const { jwt, seed } = await res.json();
-
+      
       this.nc = await connect({ 
         servers: 'wss://connect.ngs.global',
         authenticator: jwtAuthenticator(jwt, new TextEncoder().encode(seed))
