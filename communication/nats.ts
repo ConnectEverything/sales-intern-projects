@@ -37,6 +37,20 @@ export class NatsCon {
     return this.nc
   }
 
+  async createServerSideConnection(jwt: string, seed: string) {
+    if (!this.nc) {
+      this.nc = await connect({ 
+        servers: 'wss://connect.ngs.global',
+        authenticator: jwtAuthenticator(jwt, new TextEncoder().encode(seed))
+      })
+
+      const jsm = await this.nc.jetstreamManager();
+      await jsm.streams.add({ name: "rooms", subjects: ["rooms.*"], max_bytes: 1000000});
+    }
+
+    return this.nc
+  }
+
   async getJetstreamClient() {
     if (!this.js) {
       const nc = await this.createConnection();
@@ -60,5 +74,14 @@ export class NatsCon {
   }
 }
 
+let serverNC: NatsCon;
 
+export async function makeNC() {
+  if (!serverNC) {
+    serverNC = new NatsCon;
+  }
+  return serverNC
+}
+
+export { serverNC }
 export const natsCon = new NatsCon();

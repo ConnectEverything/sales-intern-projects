@@ -3,8 +3,8 @@ import { decodeFromBuf, natsCon } from "../communication/nats.ts";
 import twas from "https://esm.sh/v121/twas@2.1.2/deno/twas.mjs";
 import type { RoomView } from "../communication/types.ts";
 
-export default function Connect() {
-  const [rooms, setRooms] = useState<Record<string,RoomView>>({});
+export default function Rooms({ initialRooms }: { initialRooms: Record<string,RoomView> }) {
+  const [rooms, setRooms] = useState<Record<string,RoomView>>(initialRooms);
   
   useEffect(() => {
     (async () => {

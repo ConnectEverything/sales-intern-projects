@@ -6,6 +6,9 @@ import { gitHubApi } from "../helpers/github.ts";
 import { getCookies, setCookie } from "https://deno.land/std@0.144.0/http/cookie.ts";
 import { createUser } from "https://deno.land/x/nkeys.js@v1.0.5/modules/esm/mod.ts";
 import { encodeUser }from "https://raw.githubusercontent.com/nats-io/jwt.js/main/src/jwt.ts";
+import { decodeFromBuf, makeNC, serverNC } from "../communication/nats.ts";
+import { RoomView } from "../communication/types.ts";
+import init from "https://deno.land/x/denoflate@1.2.1/pkg/denoflate.js";
 
 export async function handler(
   req: Request,
@@ -15,7 +18,27 @@ export async function handler(
   console.log("Before running index handler: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
   const maybeAccessToken = getCookies(req.headers)["deploy_chat_token"];
   if (maybeAccessToken) {
-    return ctx.render({});
+    const jwt = getCookies(req.headers)["user_jwt"];
+    const seed = getCookies(req.headers)["user_seed"];
+    const initialRooms:Record<string,RoomView> = {};
+
+    makeNC();
+    await serverNC.createServerSideConnection(jwt, seed);
+    const kv = await serverNC.getKVClient();
+    const watch = await kv.watch();
+    watch.stop();
+
+    for await (const msg of watch) {
+      if (msg.operation != "DEL") {
+        const roomID = msg.key;
+        const msgValue = decodeFromBuf<RoomView>(msg.value);
+        initialRooms[roomID] = msgValue;   
+      }
+    }
+    // console.log(serverNC);
+    return ctx.render({
+      initialRooms: initialRooms
+    });
   }
   
   const url = new URL(req.url);
@@ -27,17 +50,30 @@ export async function handler(
   const accessToken = await gitHubApi.getAccessToken(code);
   const userData = await gitHubApi.getUserData(accessToken);
 
-  const accountSeed = Deno.env.get("ACCOUNT_SEED");
+  const accountSeed = Deno.env.get("ACCOUNT_SEED") || "";
   const natsUser = createUser();
   const userSeed = new TextDecoder().decode(natsUser.getSeed());
-  let jwt = "a";
-  if (accountSeed) {
-    jwt = await encodeUser(userData.userName, natsUser, accountSeed);
-  } else {
-    return ctx.render({})
-  }
+  const jwt = await encodeUser(userData.userName, natsUser, accountSeed);
   
-  const response = await ctx.render({})
+  const initialRooms:Record<string,RoomView> = {};
+  makeNC();
+
+  await serverNC.createServerSideConnection(jwt, userSeed);
+  const kv = await serverNC.getKVClient();
+  const watch = await kv.watch();
+  watch.stop();
+
+  for await (const msg of watch) {
+    if (msg.operation != "DEL") {
+      const roomID = msg.key;
+      const msgValue = decodeFromBuf<RoomView>(msg.value);
+      initialRooms[roomID] = msgValue;   
+    }
+  }
+
+  const response = await ctx.render({
+    initialRooms: initialRooms
+  })
   setCookie(response.headers, {
     name: "user_jwt",
     value: jwt,
@@ -63,7 +99,7 @@ export async function handler(
   return response;
 }
 
-export default function Home({ data }: PageProps<string>) {
+export default function Home({ data }: PageProps<{ initialRooms: Record<string,RoomView> }>) {
 
   return (
     <>
@@ -123,7 +159,9 @@ export default function Home({ data }: PageProps<string>) {
       </div>
       {data
         ? (
-          <Rooms />
+          <Rooms
+            initialRooms={data.initialRooms}
+          />
         )
         :(
           <div class="flex justify-center items-center flex-col">

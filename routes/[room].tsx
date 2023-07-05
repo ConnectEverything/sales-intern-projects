@@ -2,7 +2,7 @@ import { Handler, HandlerContext, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
 import Chat from "../islands/Chat.tsx";
 import { Page } from "../helpers/Page.tsx";
-import { decodeFromBuf } from "../communication/nats.ts";
+import { decodeFromBuf, serverNC } from "../communication/nats.ts";
 import { connect, jwtAuthenticator } from "../lib/nats.js";
 import type { MessageView, RoomView, UserView } from "../communication/types.ts";
 import { getCookies } from "https://deno.land/std@0.144.0/http/cookie.ts";
@@ -26,8 +26,6 @@ export const handler: Handler<Data> = async (
   // Get cookie from request header and parse it
   console.log("Beginning of room handler: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
   const accessToken = getCookies(req.headers)["deploy_chat_token"];
-  const jwt = getCookies(req.headers)["user_jwt"];
-  const seed = getCookies(req.headers)["user_seed"];
   if (!accessToken) {
     return Response.redirect(new URL(req.url).origin);
   }
@@ -36,12 +34,8 @@ export const handler: Handler<Data> = async (
   // get room name
   const roomID = ctx.params.room;
 
-  const nc: NatsConnection = await connect({ 
-    servers: 'wss://connect.ngs.global',
-    authenticator: jwtAuthenticator(jwt, new TextEncoder().encode(seed))
-  })
-  const js = await nc.jetstream();
-  const roomBucket = await js.views.kv("bucketOfRooms", { maxBucketSize: 10000000, maxValueSize: 131072 });
+  const js = await serverNC.getJetstreamClient();
+  const roomBucket = await serverNC.getKVClient();
   
   const roomVal = await roomBucket.get(roomID);
   if (!roomVal) {
@@ -53,9 +47,11 @@ export const handler: Handler<Data> = async (
   opts.orderedConsumer();
   
   console.log("Before chatmsgs: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
-  let chatmsgs: MessageView[] = []
+  const chatmsgs: MessageView[] = []
   const sub = await js.subscribe("rooms." + roomID, opts);
   console.log("Subscibed");
+  // console.log(serverNC);
+  console.log("\n");
   sub.unsubscribe();
   
   for await (const msg of sub) {
@@ -65,9 +61,6 @@ export const handler: Handler<Data> = async (
     chatmsgs.push(msgText);
   }
   
-  console.log("Right before closing " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
-  nc.close();
-
   console.log("After getting room data: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
   
   return ctx.render({
