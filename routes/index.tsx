@@ -26,7 +26,7 @@ export async function handler(
     await serverNC.createServerSideConnection(jwt, seed);
     const kv = await serverNC.getKVClient();
     const watch = await kv.watch();
-    const status = await kv.status();
+    // const status = await kv.status();
     
     watch.stop();
 
