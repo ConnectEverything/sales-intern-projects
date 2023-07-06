@@ -50,9 +50,8 @@ export const handler: Handler<Data> = async (
   const chatmsgs: MessageView[] = []
   const sub = await js.subscribe("rooms." + roomID, opts);
   console.log("Subscibed");
-  // console.log(serverNC);
-  console.log("\n");
-  sub.unsubscribe();
+
+  sub.drain();
   
   for await (const msg of sub) {
     console.log("getting the msgs");

@@ -26,6 +26,14 @@ export async function handler(
     await serverNC.createServerSideConnection(jwt, seed);
     const kv = await serverNC.getKVClient();
     const watch = await kv.watch();
+    const status = await kv.status()
+    console.log("numRooms: " + status.values);
+    
+    // const status = await kv.status();
+    console.log(watch.getPending());
+    console.log(watch.getReceived());
+    console.log(watch.getProcessed());
+    
     watch.stop();
 
     for await (const msg of watch) {
