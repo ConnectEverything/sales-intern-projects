@@ -49,7 +49,6 @@ export default function Chat(
 
     return () => {
       console.log("nats connection in chat drained");
-      
       natsCon.drain();
     }
   }, [])
