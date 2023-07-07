@@ -24,7 +24,6 @@ export const handler: Handler<Data> = async (
   ctx: HandlerContext<Data>,
 ): Promise<Response> => {
   // Get cookie from request header and parse it
-  console.log("Beginning of room handler: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
   const accessToken = getCookies(req.headers)["deploy_chat_token"];
   if (!accessToken) {
     return Response.redirect(new URL(req.url).origin);
@@ -37,30 +36,26 @@ export const handler: Handler<Data> = async (
   const js = await serverNC.getJetstreamClient();
   const roomBucket = await serverNC.getKVClient();
   
+  // get room data based on the roomID
   const roomVal = await roomBucket.get(roomID);
   if (!roomVal) {
     return new Response('Room data unavailable', { status: 400 });
   }
   const roomData = decodeFromBuf<RoomView>(roomVal.value);
 
+  // get initial messages from chat room jetstream
   const opts = consumerOpts();
   opts.orderedConsumer();
   
-  console.log("Before chatmsgs: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
   const chatmsgs: MessageView[] = []
   const sub = await js.subscribe("rooms." + roomID, opts);
-  console.log("Subscibed");
-
   sub.drain();
   
   for await (const msg of sub) {
-    console.log("getting the msgs");
-    
     const msgText = decodeFromBuf<MessageView>(msg.data);
     chatmsgs.push(msgText);
   }
   
-  console.log("After getting room data: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
   
   return ctx.render({
     roomID: roomID,

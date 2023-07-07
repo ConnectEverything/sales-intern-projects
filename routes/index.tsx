@@ -15,18 +15,18 @@ export async function handler(
   ctx: HandlerContext,
 ): Promise<Response> {
   // This is an oauth callback request.
-  console.log("Before running index handler: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
   const maybeAccessToken = getCookies(req.headers)["deploy_chat_token"];
   if (maybeAccessToken) {
     const jwt = getCookies(req.headers)["user_jwt"];
     const seed = getCookies(req.headers)["user_seed"];
     const initialRooms:Record<string,RoomView> = {};
 
+    // get the initial rooms from the KV bucket
     makeNC();
     await serverNC.createServerSideConnection(jwt, seed);
     const kv = await serverNC.getKVClient();
     const watch = await kv.watch();
-    // const status = await kv.status();
+    const status = await kv.status();
     
     watch.stop();
 
@@ -37,7 +37,7 @@ export async function handler(
         initialRooms[roomID] = msgValue;   
       }
     }
-    // console.log(serverNC);
+
     return ctx.render({
       initialRooms: initialRooms
     });
@@ -52,11 +52,13 @@ export async function handler(
   const accessToken = await gitHubApi.getAccessToken(code);
   const userData = await gitHubApi.getUserData(accessToken);
 
+  // create NGS user creds based on the user's Github username
   const accountSeed = Deno.env.get("ACCOUNT_SEED") || "";
   const natsUser = createUser();
   const userSeed = new TextDecoder().decode(natsUser.getSeed());
   const jwt = await encodeUser(userData.userName, natsUser, accountSeed);
   
+  // get initial rooms
   const initialRooms:Record<string,RoomView> = {};
   makeNC();
 

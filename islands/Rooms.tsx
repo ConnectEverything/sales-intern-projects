@@ -8,14 +8,10 @@ export default function Rooms({ initialRooms }: { initialRooms: Record<string,Ro
   
   useEffect(() => {
     (async () => {
-      console.log("Before showing rooms: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
-      
+      // watch for any updates on the rooms(new room created, lastMsgSent update)
       const roomBucket = await natsCon.getKVClient();
-      console.log("Connecting to roombucket: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
-
       const watch = await roomBucket.watch();
-      console.log("Roombucket watch: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
-
+ 
       for await (const msg of watch) {
         if (msg.operation != "DEL") {
           const roomID = msg.key;
@@ -26,14 +22,12 @@ export default function Rooms({ initialRooms }: { initialRooms: Record<string,Ro
             newRooms[roomID] = msgValue;
             return newRooms;
           });
-          console.log("Showing roombucket: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
         }
       }
     }) ();
 
     return () => {
       console.log("nats con in rooms drained");
-      
       natsCon.drain();
     }
   }, [])

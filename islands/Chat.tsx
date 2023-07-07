@@ -31,17 +31,12 @@ export default function Chat(
   const [typer, setTyper] = useState(""); // could change
 
   useEffect(() => {
+    // subscribe to incoming messages in the chat room
     (async () => {
-      console.log("First chat render: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
-      
       if (!nc.current) {
-        console.log("Before connecting to nc: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
         nc.current = await natsCon.createConnection();
-        console.log("Connecting to nc: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
       }
-
       const sub = await nc.current.subscribe(subject.current);
-      console.log("After subbing to chat msgs: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
       for await (const msg of sub) {
         const msgText = decodeFromBuf<MessageView>(msg.data);
 
@@ -60,7 +55,7 @@ export default function Chat(
   }, [])
 
   useEffect(() => {
-    // use normal pub/sub for the isTyping
+    // use normal pub/sub for the isTyping. Subscribe to the isTyping subj
     (async () => {
       if (!nc.current) {
         nc.current = await natsCon.createConnection();
@@ -117,12 +112,14 @@ export default function Chat(
         js.current = await natsCon.getJetstreamClient();
       }
 
+      // publish message to jetstream w/ appropriate subject
       await js.current.publish(subject.current, encodeToBuf(msgToSend));
       
       if (lastMsgTimeout.current) {
         clearTimeout(lastMsgTimeout.current);
       }
 
+      // if a message hasn't been sent in 5s, update the room KV pair
       lastMsgTimeout.current = setTimeout(async () => {
         const roomUpdate: RoomView = {
           name: roomName,
@@ -144,7 +141,7 @@ export default function Chat(
 
 
   const sendIsTyping = async () => {
-    // send a msg every 5 characters
+    // send an isTyping msg every 5 characters
     if(input.length % 5 === 0 && input !== ""){
       if (!nc.current) {
         nc.current = await natsCon.createConnection();

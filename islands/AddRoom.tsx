@@ -13,7 +13,7 @@ export default function AddRoom() {
         e.preventDefault();
         const create = xxhash64.create();
         try {
-          console.log("Before creating a room: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
+          // create hash based on the room name
           const roomHasher = await create;
           const roomHash = roomHasher.hash(roomName, 'hex').toString();
 
@@ -24,7 +24,6 @@ export default function AddRoom() {
             lastMessageAt: "",
           }
 
-          console.log("Natscon beginning: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
           const roomBucket = await natsCon.getKVClient();
 
           // if room doesn't exist, create it
@@ -33,9 +32,7 @@ export default function AddRoom() {
             await roomBucket.put(roomHash, encodeToBuf(roomMsg));
           }
           natsCon.drain();
-          console.log("nats con in addroom drained");
-          
-          console.log("After creating a room: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
+
           location.pathname = "/" + roomHash;
         } catch (err) {
           alert(`Cannot create room: ${err.message}`);
