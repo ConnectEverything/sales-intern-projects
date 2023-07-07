@@ -76,11 +76,10 @@ export class NatsCon {
 
 let serverNC: NatsCon;
 
-export async function makeNC() {
+export function makeNC() {
   if (!serverNC) {
     serverNC = new NatsCon;
   }
-  return serverNC
 }
 
 export { serverNC }

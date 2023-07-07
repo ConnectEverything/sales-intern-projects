@@ -2,7 +2,7 @@ import { Handler, HandlerContext, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
 import Chat from "../islands/Chat.tsx";
 import { Page } from "../helpers/Page.tsx";
-import { decodeFromBuf, serverNC } from "../communication/nats.ts";
+import { decodeFromBuf, makeNC, serverNC } from "../communication/nats.ts";
 import type { MessageView, RoomView, UserView } from "../communication/types.ts";
 import { getCookies } from "https://deno.land/std@0.144.0/http/cookie.ts";
 import { gitHubApi } from "../helpers/github.ts";
@@ -31,6 +31,13 @@ export const handler: Handler<Data> = async (
   // get room name
   const roomID = ctx.params.room;
 
+  makeNC();
+  if (!serverNC.nc) {
+    const jwt = getCookies(req.headers)["user_jwt"];
+    const seed = getCookies(req.headers)["user_seed"];
+    await serverNC.createServerSideConnection(jwt, seed);
+  }
+
   const js = await serverNC.getJetstreamClient();
   const roomBucket = await serverNC.getKVClient();
   
@@ -44,6 +51,7 @@ export const handler: Handler<Data> = async (
   // get initial messages from chat room jetstream
   const opts = consumerOpts();
   opts.orderedConsumer();
+  opts.deliverAll();
   
   const chatmsgs: MessageView[] = []
   const sub = await js.subscribe("rooms." + roomID, opts);

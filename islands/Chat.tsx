@@ -8,6 +8,7 @@ import {
 import twas from "twas";
 import { badWordsCleanerLoader } from "../helpers/bad_words.ts"
 import { JetStreamClient, NatsConnection, KV } from "https://deno.land/x/nats@v1.13.0/nats-base-client/mod.ts";
+import { consumerOpts } from "https://deno.land/x/nats@v1.13.0/nats-base-client/jsconsumeropts.ts";
 
 export default function Chat(
   {roomId, roomName, user, initialMessages}: {
@@ -35,7 +36,14 @@ export default function Chat(
       if (!nc.current) {
         nc.current = await natsCon.createConnection();
       }
-      const sub = await nc.current.subscribe(subject.current);
+      if (!js.current) {
+        js.current = await natsCon.getJetstreamClient();
+      }
+      const opts = consumerOpts();
+      opts.orderedConsumer();
+      opts.deliverNew();
+
+      const sub = await js.current.subscribe(subject.current, opts);
       for await (const msg of sub) {
         const msgText = decodeFromBuf<MessageView>(msg.data);
 
@@ -117,7 +125,7 @@ export default function Chat(
         clearTimeout(lastMsgTimeout.current);
       }
 
-      // if a message hasn't been sent in 5s, update the room KV pair
+      // if a message hasn't been sent in 2.5s, update the room KV pair
       lastMsgTimeout.current = setTimeout(async () => {
         const roomUpdate: RoomView = {
           name: roomName,
@@ -129,7 +137,7 @@ export default function Chat(
         }
         await roomBucket.current.put(roomId, encodeToBuf(roomUpdate));
         lastMsgTimeout.current = null;
-      }, 5000);
+      }, 2500);
 
     } catch (err) {
       console.log(err);
