@@ -3,12 +3,10 @@ import { Head } from "$fresh/runtime.ts";
 import Chat from "../islands/Chat.tsx";
 import { Page } from "../helpers/Page.tsx";
 import { decodeFromBuf, serverNC } from "../communication/nats.ts";
-import { connect, jwtAuthenticator } from "../lib/nats.js";
 import type { MessageView, RoomView, UserView } from "../communication/types.ts";
 import { getCookies } from "https://deno.land/std@0.144.0/http/cookie.ts";
 import { gitHubApi } from "../helpers/github.ts";
 import { NatsConnection, consumerOpts } from "https://deno.land/x/nats@v1.13.0/nats-base-client/mod.ts";
-import { libFolderInMemoryPath } from "https://deno.land/x/ts_morph@17.0.1/common/ts_morph_common.js";
 
 
 

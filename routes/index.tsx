@@ -8,7 +8,6 @@ import { createUser } from "https://deno.land/x/nkeys.js@v1.0.5/modules/esm/mod.
 import { encodeUser }from "https://raw.githubusercontent.com/nats-io/jwt.js/main/src/jwt.ts";
 import { decodeFromBuf, makeNC, serverNC } from "../communication/nats.ts";
 import { RoomView } from "../communication/types.ts";
-import init from "https://deno.land/x/denoflate@1.2.1/pkg/denoflate.js";
 
 export async function handler(
   req: Request,

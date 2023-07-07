@@ -1,6 +1,6 @@
-import { useState, useEffect } from "https://esm.sh/preact@10.13.1/hooks";
+import { useState, useEffect } from "preact/hooks"
 import { decodeFromBuf, natsCon } from "../communication/nats.ts";
-import twas from "https://esm.sh/v121/twas@2.1.2/deno/twas.mjs";
+import twas from "twas";
 import type { RoomView } from "../communication/types.ts";
 
 export default function Rooms({ initialRooms }: { initialRooms: Record<string,RoomView> }) {

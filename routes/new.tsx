@@ -1,8 +1,6 @@
 import { Head } from "$fresh/runtime.ts";
 import { Page } from "../helpers/Page.tsx";
 import AddRoom from "../islands/AddRoom.tsx";
-import { useEffect } from "preact/hooks";
-// import { natsConnection } from "../communication/natsconnection.ts";
 
 export default function NewRoom() {
   return (

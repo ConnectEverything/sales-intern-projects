@@ -5,8 +5,7 @@ import {
   encodeToBuf, 
   natsCon
  } from "../communication/nats.ts";
-import { consumerOpts } from "../lib/nats.js";
-import twas from "https://esm.sh/v121/twas@2.1.2/deno/twas.mjs";
+import twas from "twas";
 import { badWordsCleanerLoader } from "../helpers/bad_words.ts"
 import { JetStreamClient, NatsConnection, KV } from "https://deno.land/x/nats@v1.13.0/nats-base-client/mod.ts";
 
