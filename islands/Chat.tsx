@@ -9,13 +9,15 @@ import twas from "twas";
 import { badWordsCleanerLoader } from "../helpers/bad_words.ts"
 import { JetStreamClient, NatsConnection, KV } from "https://deno.land/x/nats@v1.13.0/nats-base-client/mod.ts";
 import { consumerOpts } from "https://deno.land/x/nats@v1.13.0/nats-base-client/jsconsumeropts.ts";
+import { start } from "$fresh/server.ts";
 
 export default function Chat(
-  {roomId, roomName, user, initialMessages}: {
+  {roomId, roomName, user, initialMessages, startAtMsgSeq}: {
     roomId: string;
     roomName: string;
     user: UserView;
-    initialMessages: MessageView[]
+    initialMessages: MessageView[];
+    startAtMsgSeq: number;
   },
 ) {
   const [messages, setMessages] = useState<MessageView[]>(initialMessages);
@@ -41,10 +43,15 @@ export default function Chat(
       }
       const opts = consumerOpts();
       opts.orderedConsumer();
-      opts.deliverNew();
+      
+      // account for any messages that weren't picked up from the ordered push consumer in [room].tsx
+      // this issue only occurs in Deno Deploy, not local dev
+      console.log("Start at: " + startAtMsgSeq);
+      opts.startSequence(startAtMsgSeq);
 
       const sub = await js.current.subscribe(subject.current, opts);
       for await (const msg of sub) {
+        console.log(msg.seq);
         const msgText = decodeFromBuf<MessageView>(msg.data);
 
         setMessages(prevMessages => {

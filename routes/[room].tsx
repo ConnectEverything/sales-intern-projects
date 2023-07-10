@@ -15,6 +15,7 @@ interface Data {
   room: RoomView;
   user: UserView;
   initialMessages: MessageView[];
+  startAtMsgSeq: number;
 }
 
 export const handler: Handler<Data> = async (
@@ -50,30 +51,25 @@ export const handler: Handler<Data> = async (
 
   // get initial messages from chat room jetstream
   const opts = consumerOpts();
-   opts.orderedConsumer();
-  // opts.deliverAll();
+  opts.orderedConsumer();
+  opts.deliverAll();
   // opts.deliverTo("rooms." + roomID);
   // opts.maxMessages(2);
   
   const chatmsgs: MessageView[] = []
+  let lastMsgSequence = 0;
 
-  console.log("Before sub created: " + new Date().getSeconds() + new Date().getMilliseconds());
   const sub = await js.subscribe("rooms." + roomID, opts);
-  console.log("After sub created: " + new Date().getSeconds() + new Date().getMilliseconds());
   // const sub = await js.pullSubscribe("rooms."+ roomID, opts);
-  // sub.pull()
-  console.log("Before sub drained: " + new Date().getSeconds() + new Date().getMilliseconds());
+  // sub.pull({ batch: 10 });
+  // sub.pull();
   await sub.drain();
-  console.log("After sub drained: " + new Date().getSeconds() + new Date().getMilliseconds());
 
-  console.log("\n");
   for await (const msg of sub) {
-    console.log("Msg received at: " + new Date().getSeconds() + new Date().getMilliseconds());
     const msgText = decodeFromBuf<MessageView>(msg.data);
     chatmsgs.push(msgText);
+    lastMsgSequence = msg.seq
   }
-
-  
   
   return ctx.render({
     roomID: roomID,
@@ -85,7 +81,8 @@ export const handler: Handler<Data> = async (
       name: userData.userName,
       avatarURL: userData.avatarUrl
     },
-    initialMessages: chatmsgs
+    initialMessages: chatmsgs,
+    startAtMsgSeq: lastMsgSequence + 1
   });
 };
 
@@ -101,6 +98,7 @@ export default function Room({ data }: PageProps<Data>) {
           roomName={data.room.name}
           user={data.user}
           initialMessages={data.initialMessages}
+          startAtMsgSeq={data.startAtMsgSeq}
         />
       </Page>
     </>
