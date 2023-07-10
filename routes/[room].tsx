@@ -50,17 +50,29 @@ export const handler: Handler<Data> = async (
 
   // get initial messages from chat room jetstream
   const opts = consumerOpts();
-  opts.orderedConsumer();
-  opts.deliverAll();
+   opts.orderedConsumer();
+  // opts.deliverAll();
+  // opts.deliverTo("rooms." + roomID);
+  // opts.maxMessages(2);
   
   const chatmsgs: MessageView[] = []
+
+  console.log("Before sub created: " + new Date().getSeconds() + new Date().getMilliseconds());
   const sub = await js.subscribe("rooms." + roomID, opts);
+  console.log("After sub created: " + new Date().getSeconds() + new Date().getMilliseconds());
+  // const sub = await js.pullSubscribe("rooms."+ roomID, opts);
+  // sub.pull()
+  console.log("Before sub drained: " + new Date().getSeconds() + new Date().getMilliseconds());
   await sub.drain();
-  
+  console.log("After sub drained: " + new Date().getSeconds() + new Date().getMilliseconds());
+
+  console.log("\n");
   for await (const msg of sub) {
+    console.log("Msg received at: " + new Date().getSeconds() + new Date().getMilliseconds());
     const msgText = decodeFromBuf<MessageView>(msg.data);
     chatmsgs.push(msgText);
   }
+
   
   
   return ctx.render({
