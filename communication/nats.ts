@@ -1,7 +1,7 @@
+import type { NatsConnection, JetStreamClient, KV } from "https://deno.land/x/nats@v1.13.0/src/mod.ts";
 import {
   connect, jwtAuthenticator
 } from "../lib/nats.js";
-import type { NatsConnection, JetStreamClient, KV } from "https://deno.land/x/nats@v1.13.0/src/mod.ts";
 
 const enc = new TextEncoder()
 export function encodeToBuf(x: any) {
@@ -31,7 +31,7 @@ export class NatsCon {
       })
 
       const jsm = await this.nc.jetstreamManager();
-      await jsm.streams.add({ name: "rooms", subjects: ["rooms.*"], max_bytes: 1000000});
+      await jsm.streams.add({ name: "rooms", subjects: ["rooms.*"], max_bytes: 100000000});
     }
 
     return this.nc
@@ -45,7 +45,7 @@ export class NatsCon {
       })
 
       const jsm = await this.nc.jetstreamManager();
-      await jsm.streams.add({ name: "rooms", subjects: ["rooms.*"], max_bytes: 1000000});
+      await jsm.streams.add({ name: "rooms", subjects: ["rooms.*"], max_bytes: 100000000});
     }
 
     return this.nc
@@ -62,7 +62,7 @@ export class NatsCon {
   async getKVClient() {
     if (!this.roomBucket) {
       const js = await this.getJetstreamClient();
-      this.roomBucket = await js.views.kv("bucketOfRooms", { maxBucketSize: 10000000, maxValueSize: 131072 });
+      this.roomBucket = await js.views.kv("bucketOfRooms", { maxBucketSize: 100000000, maxValueSize: 131072 });
     }
     return this.roomBucket
   }

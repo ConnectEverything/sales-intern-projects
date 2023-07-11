@@ -53,16 +53,11 @@ export const handler: Handler<Data> = async (
   const opts = consumerOpts();
   opts.orderedConsumer();
   opts.deliverAll();
-  // opts.deliverTo("rooms." + roomID);
-  // opts.maxMessages(2);
   
   const chatmsgs: MessageView[] = []
   let lastMsgSequence = 0;
 
   const sub = await js.subscribe("rooms." + roomID, opts);
-  // const sub = await js.pullSubscribe("rooms."+ roomID, opts);
-  // sub.pull({ batch: 10 });
-  // sub.pull();
   await sub.drain();
 
   for await (const msg of sub) {

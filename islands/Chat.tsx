@@ -46,12 +46,10 @@ export default function Chat(
       
       // account for any messages that weren't picked up from the ordered push consumer in [room].tsx
       // this issue only occurs in Deno Deploy, not local dev
-      console.log("Start at: " + startAtMsgSeq);
       opts.startSequence(startAtMsgSeq);
 
       const sub = await js.current.subscribe(subject.current, opts);
       for await (const msg of sub) {
-        console.log(msg.seq);
         const msgText = decodeFromBuf<MessageView>(msg.data);
 
         setMessages(prevMessages => {
