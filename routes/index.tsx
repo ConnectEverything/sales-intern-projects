@@ -5,9 +5,10 @@ import { Footer } from "../helpers/Footer.tsx";
 import { gitHubApi } from "../helpers/github.ts";
 import { getCookies, setCookie } from "https://deno.land/std@0.144.0/http/cookie.ts";
 import { createUser } from "https://deno.land/x/nkeys.js@v1.0.5/modules/esm/mod.ts";
-import { encodeUser }from "https://raw.githubusercontent.com/nats-io/jwt.js/main/src/jwt.ts";
+import { EncodingOptions, encodeUser }from "https://raw.githubusercontent.com/nats-io/jwt.js/main/src/jwt.ts";
 import { decodeFromBuf, makeNC, serverNC } from "../communication/nats.ts";
 import { RoomView } from "../communication/types.ts";
+import { User } from "https://raw.githubusercontent.com/nats-io/jwt.js/main/src/types.ts";
 
 export async function handler(
   req: Request,
@@ -33,7 +34,8 @@ export async function handler(
       if (msg.operation != "DEL") {
         const roomID = msg.key;
         const msgValue = decodeFromBuf<RoomView>(msg.value);
-        initialRooms[roomID] = msgValue;   
+        initialRooms[roomID] = msgValue;
+        console.log(msgValue.name);
       }
     }
 
@@ -55,8 +57,42 @@ export async function handler(
   const accountSeed = Deno.env.get("ACCOUNT_SEED") || "";
   const natsUser = createUser();
   const userSeed = new TextDecoder().decode(natsUser.getSeed());
-  const jwt = await encodeUser(userData.userName, natsUser, accountSeed);
-  
+
+  const partialUserOpts: Partial<User> = {
+    pub: {
+      allow: [
+        "rooms.*." + userData.userName,
+        "isTyping.*." + userData.userName,
+        // "$JS.API.>",
+        "$JS.API.STREAM.NAMES", // perform JS subscribe
+        "$JS.API.CONSUMER.CREATE.rooms", // perform JS subscribe
+        "$JS.API.INFO",
+        "$JS.API.STREAM.INFO.KV_bucketOfRooms", // Bind to KV bucket
+        "$JS.API.CONSUMER.CREATE.KV_bucketOfRooms", // KV watch, creates consumer
+        "$JS.API.DIRECT.GET.KV_bucketOfRooms.$KV.bucketOfRooms.*", // KV get
+        "$KV.bucketOfRooms.*" // KV put
+      ],
+      deny: []
+    },
+    sub: {
+      allow: [
+        "rooms.>",
+        "isTyping.>",
+        "_INBOX.>" // _INBOX.QEZ4WI9JB1GRZDZM2A4QJS.*
+      ],
+      deny: []
+    }
+  }
+
+  const dateRn = new Date()
+
+  const expirationDate = Math.floor(new Date(dateRn.getTime() + 1500 * 1000).getTime() / 1000);
+  const partialEncodingOpts: Partial<EncodingOptions> = {
+    exp: expirationDate
+  }
+
+  const jwt = await encodeUser(userData.userName, natsUser, accountSeed, partialUserOpts, partialEncodingOpts);
+
   // get initial rooms
   const initialRooms:Record<string,RoomView> = {};
   makeNC();
@@ -80,24 +116,23 @@ export async function handler(
   setCookie(response.headers, {
     name: "user_jwt",
     value: jwt,
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: 1500,
     httpOnly: true,
   });
 
   setCookie(response.headers, {
     name: "user_seed",
     value: userSeed,
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: 1500,
     httpOnly: true,
   });
   
   setCookie(response.headers, {
     name: "deploy_chat_token",
     value: accessToken,
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: 1500,
     httpOnly: true,
   });
-  console.log("After running index handler: " + new Date().getSeconds() + ":" + new Date().getMilliseconds());
 
   return response;
 }

@@ -17,6 +17,8 @@ export default function Rooms({ initialRooms }: { initialRooms: Record<string,Ro
         if (msg.operation != "DEL") {
           const roomID = msg.key;
           const msgValue = decodeFromBuf<RoomView>(msg.value);
+          console.log(msgValue.name);
+          
           
           setRooms(prevRooms => {
             const newRooms = { ...prevRooms };

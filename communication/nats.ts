@@ -27,11 +27,9 @@ export class NatsCon {
       
       this.nc = await connect({ 
         servers: 'wss://connect.ngs.global',
-        authenticator: jwtAuthenticator(jwt, new TextEncoder().encode(seed))
+        authenticator: jwtAuthenticator(jwt, new TextEncoder().encode(seed)),
+        noEcho: true
       })
-
-      const jsm = await this.nc.jetstreamManager();
-      await jsm.streams.add({ name: "rooms", subjects: ["rooms.*"], max_bytes: 100000000});
     }
 
     return this.nc
@@ -41,11 +39,9 @@ export class NatsCon {
     if (!this.nc) {
       this.nc = await connect({ 
         servers: 'wss://connect.ngs.global',
-        authenticator: jwtAuthenticator(jwt, new TextEncoder().encode(seed))
+        authenticator: jwtAuthenticator(jwt, new TextEncoder().encode(seed)),
+        noEcho: true
       })
-
-      const jsm = await this.nc.jetstreamManager();
-      await jsm.streams.add({ name: "rooms", subjects: ["rooms.*"], max_bytes: 100000000});
     }
 
     return this.nc
