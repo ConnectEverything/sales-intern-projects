@@ -1,16 +1,17 @@
-import { useEffect, useRef, useState, useCallback } from "preact/hooks";
-import type { MessageView, RoomView, UserView } from "../communication/types.ts";
-import {
-  decodeFromBuf,
-  encodeToBuf
-} from "../communication/nats.ts";
+import { useCallback, useEffect, useRef, useState } from "preact/hooks";
+import type {
+  MessageView,
+  RoomView,
+  UserView,
+} from "../communication/types.ts";
+import { decodeFromBuf, encodeToBuf } from "../communication/nats.ts";
 import twas from "twas";
-import { badWordsCleanerLoader } from "../helpers/bad_words.ts"
+import { badWordsCleanerLoader } from "../helpers/bad_words.ts";
 import { consumerOpts } from "https://deno.land/x/nats@v1.13.0/nats-base-client/jsconsumeropts.ts";
-import {useClientNatsCon} from "../helpers/ClientNatsCon.ts";
+import { useClientNatsCon } from "../helpers/ClientNatsCon.ts";
 
 export default function Chat(
-  {roomId, roomName, user, initialMessages, startAtMsgSeq}: {
+  { roomId, roomName, user, initialMessages, startAtMsgSeq }: {
     roomId: string;
     roomName: string;
     user: UserView;
@@ -20,18 +21,18 @@ export default function Chat(
 ) {
   const [messages, setMessages] = useState<MessageView[]>(initialMessages);
   const [input, setInput] = useState("");
-  const subject = useRef("rooms." + roomId + ".*")
+  const subject = useRef("rooms." + roomId + ".*");
 
   const lastMsgTimeout = useRef<number | null>(null);
   const [inputTimer, setInputTimer] = useState<number | null>(null);
   const messagesContainer = useRef<HTMLDivElement>(null);
   const [typer, setTyper] = useState(""); // could change
-  const {natsCon} = useClientNatsCon()
+  const { natsCon } = useClientNatsCon();
 
   useEffect(() => {
     if (!natsCon) {
       // wait until the natsCon connection has been made
-      return
+      return;
     }
 
     // subscribe to incoming messages in the chat room
@@ -49,31 +50,33 @@ export default function Chat(
       for await (const msg of sub) {
         const msgText = decodeFromBuf<MessageView>(msg.data);
 
-        setMessages(prevMessages => {
-          const newMsgs = [ ...prevMessages, msgText ];
+        setMessages((prevMessages) => {
+          const newMsgs = [...prevMessages, msgText];
           return newMsgs;
         });
       }
-    }) ();
-  }, [natsCon])
+    })();
+  }, [natsCon]);
 
   useEffect(() => {
     if (!natsCon) {
       // wait until the natsCon connection has been made
-      return
+      return;
     }
 
     // use normal pub/sub for the isTyping. Subscribe to the isTyping subj
     (async () => {
       console.log("isTyping subscibe subj: " + "isTyping." + roomId + ".*");
 
-      const isTypingSub = await natsCon.nc.subscribe("isTyping." + roomId + ".*");
+      const isTypingSub = await natsCon.nc.subscribe(
+        "isTyping." + roomId + ".*",
+      );
       for await (const msg of isTypingSub) {
         const userTyping = decodeFromBuf<string>(msg.data);
         setTyper(userTyping);
       }
-    }) ();
-  }, [natsCon])
+    })();
+  }, [natsCon]);
 
   useEffect(() => {
     const container = messagesContainer.current;
@@ -85,24 +88,26 @@ export default function Chat(
   useEffect(() => {
     if (!natsCon || !input) {
       // wait until the natsCon connection has been made
-      return
+      return;
     }
 
     // if the input hasn't been updated in 2 seconds, send a "" as the isTyping
     if (inputTimer) {
-      clearTimeout(inputTimer)
+      clearTimeout(inputTimer);
     }
 
     setInputTimer(setTimeout(async () => {
-      await natsCon.nc.publish("isTyping." + roomId + "." + user.name, encodeToBuf(""));
-    }, 2000))
-  }, [natsCon, input])
-
+      await natsCon.nc.publish(
+        "isTyping." + roomId + "." + user.name,
+        encodeToBuf(""),
+      );
+    }, 2000));
+  }, [natsCon, input]);
 
   const send = useCallback(async () => {
     if (!natsCon) {
       // wait until the natsCon connection has been made
-      return
+      return;
     }
 
     if (input === "") {
@@ -116,9 +121,9 @@ export default function Chat(
       createdAt: new Date().toISOString(),
       user: {
         name: user.name,
-        avatarURL: user.avatarURL
-      }
-    }
+        avatarURL: user.avatarURL,
+      },
+    };
 
     try {
       const js = await natsCon.getJetstreamClient();
@@ -126,7 +131,10 @@ export default function Chat(
       // publish message to jetstream w/ appropriate subject
       console.log("Js publishing subj: " + "rooms." + roomId + "." + user.name);
 
-      await js.publish("rooms." + roomId + "." + user.name, encodeToBuf(msgToSend));
+      await js.publish(
+        "rooms." + roomId + "." + user.name,
+        encodeToBuf(msgToSend),
+      );
 
       if (lastMsgTimeout.current) {
         clearTimeout(lastMsgTimeout.current);
@@ -137,32 +145,36 @@ export default function Chat(
         const roomUpdate: RoomView = {
           name: roomName,
           lastMessageAt: msgToSend.createdAt,
-        }
+        };
 
         const roomBucket = await natsCon.getKVClient();
         await roomBucket.put(roomId, encodeToBuf(roomUpdate));
         lastMsgTimeout.current = null;
       }, 2500);
-
     } catch (err) {
       console.log(err);
     }
     setInput("");
-  }, [natsCon, input])
+  }, [natsCon, input]);
 
   const sendIsTyping = useCallback(async () => {
     if (!natsCon) {
       // wait until the natsCon connection has been made
-      return
+      return;
     }
 
     // send an isTyping msg every 5 characters
-    if(input.length % 5 === 0 && input !== ""){
-      console.log("istyping publish subj: " + "isTyping." + roomId + "." + user.name);
+    if (input.length % 5 === 0 && input !== "") {
+      console.log(
+        "istyping publish subj: " + "isTyping." + roomId + "." + user.name,
+      );
 
-      await natsCon.nc.publish("isTyping." + roomId + "." + user.name, encodeToBuf(user.name));
+      await natsCon.nc.publish(
+        "isTyping." + roomId + "." + user.name,
+        encodeToBuf(user.name),
+      );
     }
-  }, [natsCon, input])
+  }, [natsCon, input]);
 
   return (
     <>

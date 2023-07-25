@@ -1,19 +1,22 @@
 import { Handler } from "$fresh/server.ts";
 import { getCookies } from "https://deno.land/std@0.144.0/http/cookie.ts";
-import {User} from "https://raw.githubusercontent.com/nats-io/jwt.js/main/src/types.ts";
-import {encodeUser, EncodingOptions} from "https://raw.githubusercontent.com/nats-io/jwt.js/main/src/jwt.ts";
-import {gitHubApi} from "../../helpers/github.ts";
-import {createUser} from "https://deno.land/x/nkeys.js@v1.0.5/src/nkeys.ts";
-import {setEd25519Helper} from "https://deno.land/x/nkeys.js@v1.0.5/src/helper.ts";
-import {denoHelper} from "https://deno.land/x/nkeys.js@v1.0.5/modules/esm/deps.ts";
+import { User } from "https://raw.githubusercontent.com/nats-io/jwt.js/main/src/types.ts";
+import {
+  encodeUser,
+  EncodingOptions,
+} from "https://raw.githubusercontent.com/nats-io/jwt.js/main/src/jwt.ts";
+import { gitHubApi } from "../../helpers/github.ts";
+import { createUser } from "https://deno.land/x/nkeys.js@v1.0.5/src/nkeys.ts";
+import { setEd25519Helper } from "https://deno.land/x/nkeys.js@v1.0.5/src/helper.ts";
+import { denoHelper } from "https://deno.land/x/nkeys.js@v1.0.5/modules/esm/deps.ts";
 
 export const handler: Handler = async (req: Request): Promise<Response> => {
   const accessToken = getCookies(req.headers)["deploy_chat_token"];
   if (!accessToken) {
-    return new Response('Unauthorized', { status: 401 });
+    return new Response("Unauthorized", { status: 401 });
   }
   const userData = await gitHubApi.getUserData(accessToken);
-  const inboxPrefix = `_INBOX.${userData.userName}`
+  const inboxPrefix = `_INBOX.${userData.userName}`;
 
   const partialUserOpts: Partial<User> = {
     pub: {
@@ -29,35 +32,43 @@ export const handler: Handler = async (req: Request): Promise<Response> => {
         "$JS.API.CONSUMER.CREATE.KV_bucketOfRooms", // consume KV_bucketOfRooms
         "$JS.API.DIRECT.GET.KV_bucketOfRooms.>", // Direct Get on KV_bucketOfRooms
       ],
-      deny: []
+      deny: [],
     },
     sub: {
       allow: [
         "rooms.>", // read all rooms
         "isTyping.>", // read who is typing
-        `${inboxPrefix}.>` // read private inbox
+        `${inboxPrefix}.>`, // read private inbox
       ],
-      deny: []
-    }
-  }
+      deny: [],
+    },
+  };
 
-  const dateRn = new Date()
+  const dateRn = new Date();
 
-  const expirationDate = Math.floor(new Date(dateRn.getTime() + 1500 * 1000).getTime() / 1000);
+  const expirationDate = Math.floor(
+    new Date(dateRn.getTime() + 1500 * 1000).getTime() / 1000,
+  );
   const partialEncodingOpts: Partial<EncodingOptions> = {
-    exp: expirationDate
-  }
+    exp: expirationDate,
+  };
 
   const accountSeed = Deno.env.get("ACCOUNT_SEED") || "";
   setEd25519Helper(denoHelper);
   const natsUser = createUser();
   const seed = new TextDecoder().decode(natsUser.getSeed());
 
-  const jwt = await encodeUser(userData.userName, natsUser, accountSeed, partialUserOpts, partialEncodingOpts);
+  const jwt = await encodeUser(
+    userData.userName,
+    natsUser,
+    accountSeed,
+    partialUserOpts,
+    partialEncodingOpts,
+  );
 
   const data = { jwt, seed, inboxPrefix, username: userData.userName };
   const body = JSON.stringify(data);
-  const headers = new Headers({ 'Content-Type': 'application/json' });
+  const headers = new Headers({ "Content-Type": "application/json" });
 
   return new Response(body, { headers });
 };

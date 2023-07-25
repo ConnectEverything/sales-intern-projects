@@ -1,37 +1,37 @@
-import { useState, useCallback } from "preact/hooks";
+import { useCallback, useState } from "preact/hooks";
 import * as xxhash64 from "https://deno.land/x/xxhash64@1.0.0/mod.ts";
-import {badWordsCleanerLoader} from "../helpers/bad_words.ts";
-import {RoomView} from "../communication/types.ts";
-import {encodeToBuf} from "../communication/nats.ts";
-import {useClientNatsCon} from "../helpers/ClientNatsCon.ts";
+import { badWordsCleanerLoader } from "../helpers/bad_words.ts";
+import { RoomView } from "../communication/types.ts";
+import { encodeToBuf } from "../communication/nats.ts";
+import { useClientNatsCon } from "../helpers/ClientNatsCon.ts";
 
 export default function AddRoom() {
   const [roomName, setRoomName] = useState("");
-  const {natsCon} = useClientNatsCon()
+  const { natsCon } = useClientNatsCon();
 
-  const onSubmit=useCallback(async (e) => {
+  const onSubmit = useCallback(async (e) => {
     e.preventDefault();
     if (!natsCon) {
       // wait until the natsCon connection has been made
       alert(`Cannot create room: NATS not connected`);
-      return
+      return;
     }
 
     const create = xxhash64.create();
     try {
       // create hash based on the room name
       const roomHasher = await create;
-      const roomHash = roomHasher.hash(roomName, 'hex').toString();
+      const roomHash = roomHasher.hash(roomName, "hex").toString();
 
       const badWordsCleaner = await badWordsCleanerLoader.getInstance();
       const cleanedRoomName = badWordsCleaner.clean(roomName);
       const roomMsg: RoomView = {
         name: cleanedRoomName,
         lastMessageAt: "",
-      }
+      };
 
       const roomBucket = await natsCon.getKVClient();
-      const roomKey = `${roomHash}.${natsCon.username}`
+      const roomKey = `${roomHash}.${natsCon.username}`;
 
       // if room doesn't exist, create it
       const getRoom = await roomBucket.get(roomKey);
@@ -43,7 +43,7 @@ export default function AddRoom() {
     } catch (err) {
       alert(`Cannot create room: ${err.message}`);
     }
-  }, [natsCon, roomName])
+  }, [natsCon, roomName]);
 
   return (
     <form onSubmit={onSubmit}>
@@ -63,14 +63,13 @@ export default function AddRoom() {
           onChange={(e) => setRoomName(e.currentTarget.value)}
         />
       </label>
-      
+
       <button
         class="mt-7 flex flex items-center rounded-md h-8 py-2 px-4 bg-gray-800 font-medium text-sm text-white"
         type="submit"
       >
         create
       </button>
-      
     </form>
   );
 }

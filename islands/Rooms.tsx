@@ -1,42 +1,41 @@
-import { useState, useEffect } from "preact/hooks"
-import {decodeFromBuf} from "../communication/nats.ts";
+import { useEffect, useState } from "preact/hooks";
+import { decodeFromBuf } from "../communication/nats.ts";
 import twas from "twas";
 import type { RoomView } from "../communication/types.ts";
-import {useClientNatsCon} from "../helpers/ClientNatsCon.ts";
+import { useClientNatsCon } from "../helpers/ClientNatsCon.ts";
 
+export default function Rooms(
+  { initialRooms }: { initialRooms: Record<string, RoomView> },
+) {
+  const [rooms, setRooms] = useState<Record<string, RoomView>>(initialRooms);
+  const { natsCon } = useClientNatsCon();
 
-export default function Rooms({ initialRooms }: { initialRooms: Record<string,RoomView> }) {
-  const [rooms, setRooms] = useState<Record<string,RoomView>>(initialRooms);
-  const {natsCon} = useClientNatsCon()
-  
   useEffect(() => {
     if (!natsCon) {
       // wait until the natsCon connection has been made
-      return
+      return;
     }
 
     (async () => {
       // watch for any updates on the rooms(new room created, lastMsgSent update)
       const roomBucket = await natsCon.getKVClient();
       const watch = await roomBucket.watch();
- 
+
       for await (const msg of watch) {
         if (msg.operation != "DEL") {
           const roomID = msg.key;
           const msgValue = decodeFromBuf<RoomView>(msg.value);
           console.log(msgValue.name);
-          
-          
-          setRooms(prevRooms => {
+
+          setRooms((prevRooms) => {
             const newRooms = { ...prevRooms };
             newRooms[roomID] = msgValue;
             return newRooms;
           });
         }
       }
-    }) ();
-  }, [natsCon])
-
+    })();
+  }, [natsCon]);
 
   return (
     <ul
@@ -58,33 +57,35 @@ export default function Rooms({ initialRooms }: { initialRooms: Record<string,Ro
       </li>
 
       {Object.entries(rooms)
-        .sort(([,a], [,b]) => 
-        new Date(b.lastMessageAt || 0).getTime() - new Date(a.lastMessageAt || 0).getTime()) 
+        .sort(([, a], [, b]) =>
+          new Date(b.lastMessageAt || 0).getTime() -
+          new Date(a.lastMessageAt || 0).getTime()
+        )
         .map(([key, value]) => {
-        return (
-          <li key={value.name}>
-            <a
-              href={`/${key}`}
-              class="grid grid-cols-3 items-center bg-white rounded-full h-18 border-2 border-gray-300 transition-colors hover:bg-gray-100 hover:border-gray-400 group"
-            >
-              <div
-                class="w-12 h-12 bg-cover rounded-3xl ml-3"
-                style={`background-image: url(${
-                  "https://deno-avatar.deno.dev/avatar/" + key
-                })`}
-              />
-              <p class="text-xl font-bold text-gray-900 justify-self-center group-hover:underline group-focus:underline">
-                {value.name}
-              </p>
-              <p class="font-medium text-gray-400 mr-8 justify-self-end">
-                {value.lastMessageAt
-                  ? twas(new Date(value.lastMessageAt).getTime())
-                  : "No messages"}
-              </p>
-            </a>
-          </li>
-        );
-      })}
+          return (
+            <li key={value.name}>
+              <a
+                href={`/${key}`}
+                class="grid grid-cols-3 items-center bg-white rounded-full h-18 border-2 border-gray-300 transition-colors hover:bg-gray-100 hover:border-gray-400 group"
+              >
+                <div
+                  class="w-12 h-12 bg-cover rounded-3xl ml-3"
+                  style={`background-image: url(${
+                    "https://deno-avatar.deno.dev/avatar/" + key
+                  })`}
+                />
+                <p class="text-xl font-bold text-gray-900 justify-self-center group-hover:underline group-focus:underline">
+                  {value.name}
+                </p>
+                <p class="font-medium text-gray-400 mr-8 justify-self-end">
+                  {value.lastMessageAt
+                    ? twas(new Date(value.lastMessageAt).getTime())
+                    : "No messages"}
+                </p>
+              </a>
+            </li>
+          );
+        })}
     </ul>
-  )
+  );
 }
