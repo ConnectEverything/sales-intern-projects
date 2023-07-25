@@ -1,44 +1,52 @@
-import { useState } from "preact/hooks";
-import { encodeToBuf, natsCon } from "../communication/nats.ts";
-import { badWordsCleanerLoader } from "../helpers/bad_words.ts"
-import { RoomView } from "../communication/types.ts";
+import { useCallback, useState } from "preact/hooks";
 import * as xxhash64 from "https://deno.land/x/xxhash64@1.0.0/mod.ts";
+import { badWordsCleanerLoader } from "../helpers/bad_words.ts";
+import { RoomView } from "../communication/types.ts";
+import { encodeToBuf } from "../communication/nats.ts";
+import { useClientNatsCon } from "../helpers/ClientNatsCon.ts";
 
 export default function AddRoom() {
   const [roomName, setRoomName] = useState("");
+  const { natsCon } = useClientNatsCon();
+
+  const onSubmit = useCallback(async (e) => {
+    e.preventDefault();
+    if (!natsCon) {
+      // wait until the natsCon connection has been made
+      alert(`Cannot create room: NATS not connected`);
+      return;
+    }
+
+    const create = xxhash64.create();
+    try {
+      // create hash based on the room name
+      const roomHasher = await create;
+      const roomHash = roomHasher.hash(roomName, "hex").toString();
+
+      const badWordsCleaner = await badWordsCleanerLoader.getInstance();
+      const cleanedRoomName = badWordsCleaner.clean(roomName);
+      const roomMsg: RoomView = {
+        name: cleanedRoomName,
+        lastMessageAt: "",
+      };
+
+      const roomBucket = await natsCon.getKVClient();
+      const roomKey = `${roomHash}.${natsCon.username}`;
+
+      // if room doesn't exist, create it
+      const getRoom = await roomBucket.get(roomKey);
+      if (!getRoom) {
+        await roomBucket.put(roomKey, encodeToBuf(roomMsg));
+      }
+
+      location.pathname = "/" + roomKey;
+    } catch (err) {
+      alert(`Cannot create room: ${err.message}`);
+    }
+  }, [natsCon, roomName]);
 
   return (
-    <form
-      onSubmit={async (e) => {
-        e.preventDefault();
-        const create = xxhash64.create();
-        try {
-          // create hash based on the room name
-          const roomHasher = await create;
-          const roomHash = roomHasher.hash(roomName, 'hex').toString();
-
-          const badWordsCleaner = await badWordsCleanerLoader.getInstance();
-          const cleanedRoomName = badWordsCleaner.clean(roomName);
-          const roomMsg: RoomView = {
-            name: cleanedRoomName,
-            lastMessageAt: "",
-          }
-
-          const roomBucket = await natsCon.getKVClient();
-
-          // if room doesn't exist, create it
-          const getRoom = await roomBucket.get(roomHash);
-          if (!getRoom) {
-            await roomBucket.put(roomHash, encodeToBuf(roomMsg));
-          }
-          natsCon.drain();
-
-          location.pathname = "/" + roomHash;
-        } catch (err) {
-          alert(`Cannot create room: ${err.message}`);
-        }
-      }}
-    >
+    <form onSubmit={onSubmit}>
       <label>
         <div class="mb-2.5">
           <p class="font-semibold">Name</p>
@@ -55,14 +63,13 @@ export default function AddRoom() {
           onChange={(e) => setRoomName(e.currentTarget.value)}
         />
       </label>
-      
+
       <button
         class="mt-7 flex flex items-center rounded-md h-8 py-2 px-4 bg-gray-800 font-medium text-sm text-white"
         type="submit"
       >
         create
       </button>
-      
     </form>
   );
 }

@@ -2,13 +2,18 @@ import { Handler, HandlerContext, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
 import Chat from "../islands/Chat.tsx";
 import { Page } from "../helpers/Page.tsx";
-import { decodeFromBuf, makeNC, serverNC } from "../communication/nats.ts";
-import type { MessageView, RoomView, UserView } from "../communication/types.ts";
+import {
+  decodeFromBuf,
+  getServerNatsConnection,
+} from "../communication/nats.ts";
+import type {
+  MessageView,
+  RoomView,
+  UserView,
+} from "../communication/types.ts";
 import { getCookies } from "https://deno.land/std@0.144.0/http/cookie.ts";
 import { gitHubApi } from "../helpers/github.ts";
-import { NatsConnection, consumerOpts } from "https://deno.land/x/nats@v1.13.0/nats-base-client/mod.ts";
-
-
+import { consumerOpts } from "https://deno.land/x/nats@v1.13.0/nats-base-client/mod.ts";
 
 interface Data {
   roomID: string;
@@ -32,20 +37,15 @@ export const handler: Handler<Data> = async (
   // get room name
   const roomID = ctx.params.room;
 
-  makeNC();
-  if (!serverNC.nc) {
-    const jwt = getCookies(req.headers)["user_jwt"];
-    const seed = getCookies(req.headers)["user_seed"];
-    await serverNC.createServerSideConnection(jwt, seed);
-  }
+  const natsCon = await getServerNatsConnection();
+  const js = await natsCon.getJetstreamClient();
+  const roomBucket = await natsCon.getKVClient();
+  await natsCon.ensureRoomsStreamCreated();
 
-  const js = await serverNC.getJetstreamClient();
-  const roomBucket = await serverNC.getKVClient();
-  
   // get room data based on the roomID
   const roomVal = await roomBucket.get(roomID);
   if (!roomVal) {
-    return new Response('Room data unavailable', { status: 400 });
+    return new Response("Room data unavailable", { status: 400 });
   }
   const roomData = decodeFromBuf<RoomView>(roomVal.value);
 
@@ -53,19 +53,19 @@ export const handler: Handler<Data> = async (
   const opts = consumerOpts();
   opts.orderedConsumer();
   opts.deliverAll();
-  
-  const chatmsgs: MessageView[] = []
+
+  const chatmsgs: MessageView[] = [];
   let lastMsgSequence = 0;
 
-  const sub = await js.subscribe("rooms." + roomID, opts);
+  const sub = await js.subscribe("rooms." + roomID + ".>", opts);
   await sub.drain();
 
   for await (const msg of sub) {
     const msgText = decodeFromBuf<MessageView>(msg.data);
     chatmsgs.push(msgText);
-    lastMsgSequence = msg.seq
+    lastMsgSequence = msg.seq;
   }
-  
+
   return ctx.render({
     roomID: roomID,
     room: {
@@ -74,10 +74,10 @@ export const handler: Handler<Data> = async (
     },
     user: {
       name: userData.userName,
-      avatarURL: userData.avatarUrl
+      avatarURL: userData.avatarUrl,
     },
     initialMessages: chatmsgs,
-    startAtMsgSeq: lastMsgSequence + 1
+    startAtMsgSeq: lastMsgSequence + 1,
   });
 };
 
@@ -85,7 +85,7 @@ export default function Room({ data }: PageProps<Data>) {
   return (
     <>
       <Head>
-        <title> | Deno Chat</title>
+        <title>| Deno Chat</title>
       </Head>
       <Page>
         <Chat
