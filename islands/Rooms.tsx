@@ -1,13 +1,20 @@
 import { useState, useEffect } from "preact/hooks"
-import { decodeFromBuf, natsCon } from "../communication/nats.ts";
+import {decodeFromBuf} from "../communication/nats.ts";
 import twas from "twas";
 import type { RoomView } from "../communication/types.ts";
+import {useClientNatsCon} from "../helpers/ClientNatsCon.ts";
 
 
 export default function Rooms({ initialRooms }: { initialRooms: Record<string,RoomView> }) {
   const [rooms, setRooms] = useState<Record<string,RoomView>>(initialRooms);
+  const {natsCon} = useClientNatsCon()
   
   useEffect(() => {
+    if (!natsCon) {
+      // wait until the natsCon connection has been made
+      return
+    }
+
     (async () => {
       // watch for any updates on the rooms(new room created, lastMsgSent update)
       const roomBucket = await natsCon.getKVClient();
@@ -28,12 +35,7 @@ export default function Rooms({ initialRooms }: { initialRooms: Record<string,Ro
         }
       }
     }) ();
-
-    return () => {
-      console.log("nats con in rooms drained");
-      natsCon.drain();
-    }
-  }, [])
+  }, [natsCon])
 
 
   return (
