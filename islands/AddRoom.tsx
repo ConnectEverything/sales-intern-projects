@@ -4,7 +4,7 @@ import { badWordsCleanerLoader } from "../helpers/bad_words.ts"
 import { RoomView } from "../communication/types.ts";
 import * as xxhash64 from "https://deno.land/x/xxhash64@1.0.0/mod.ts";
 
-export default function AddRoom() {
+export default function AddRoom({username}: {username: string}) {
   const [roomName, setRoomName] = useState("");
 
   return (
@@ -24,12 +24,14 @@ export default function AddRoom() {
             lastMessageAt: "",
           }
 
+          const nc = await natsCon.createConnection();
           const roomBucket = await natsCon.getKVClient();
 
           // if room doesn't exist, create it
           const getRoom = await roomBucket.get(roomHash);
           if (!getRoom) {
-            await roomBucket.put(roomHash, encodeToBuf(roomMsg));
+            nc.publish(`updateRoom.${roomHash}.${username}`, encodeToBuf(roomMsg));
+
           }
           natsCon.drain();
 

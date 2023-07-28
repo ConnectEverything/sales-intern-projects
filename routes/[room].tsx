@@ -2,7 +2,7 @@ import { Handler, HandlerContext, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
 import Chat from "../islands/Chat.tsx";
 import { Page } from "../helpers/Page.tsx";
-import { decodeFromBuf, makeNC, serverNC } from "../communication/nats.ts";
+import { decodeFromBuf, makeKVsubService, makeNC, serverNC } from "../communication/nats.ts";
 import type { MessageView, RoomView, UserView } from "../communication/types.ts";
 import { getCookies } from "https://deno.land/std@0.144.0/http/cookie.ts";
 import { gitHubApi } from "../helpers/github.ts";
@@ -34,10 +34,9 @@ export const handler: Handler<Data> = async (
 
   makeNC();
   if (!serverNC.nc) {
-    const jwt = getCookies(req.headers)["user_jwt"];
-    const seed = getCookies(req.headers)["user_seed"];
-    await serverNC.createServerSideConnection(jwt, seed);
+    await serverNC.createServerSideConnection();
   }
+  makeKVsubService(roomID, userData.userName);
 
   const js = await serverNC.getJetstreamClient();
   const roomBucket = await serverNC.getKVClient();

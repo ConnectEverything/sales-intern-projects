@@ -48,7 +48,6 @@ export default function Chat(
       // this issue only occurs in Deno Deploy, not local dev
       opts.startSequence(startAtMsgSeq);
 
-      console.log("js subscribe subject: " + subject.current);
       const sub = await js.current.subscribe(subject.current, opts);
       for await (const msg of sub) {
         const msgText = decodeFromBuf<MessageView>(msg.data);
@@ -59,11 +58,6 @@ export default function Chat(
         });
       }
     }) ();
-
-    return () => {
-      console.log("nats connection in chat drained");
-      natsCon.drain();
-    }
   }, [])
 
   useEffect(() => {
@@ -72,7 +66,6 @@ export default function Chat(
       if (!nc.current) {
         nc.current = await natsCon.createConnection();
       }
-      console.log("isTyping subscibe subj: " + "isTyping." + roomId + ".*");
       
       const isTypingSub = await nc.current.subscribe("isTyping." + roomId + ".*");
       for await (const msg of isTypingSub) { 
@@ -128,8 +121,6 @@ export default function Chat(
       }
 
       // publish message to jetstream w/ appropriate subject
-      console.log("Js publishing subj: " + "rooms." + roomId + "." + user.name);
-      
       await js.current.publish("rooms." + roomId + "." + user.name, encodeToBuf(msgToSend));
       
       if (lastMsgTimeout.current) {
@@ -142,11 +133,11 @@ export default function Chat(
           name: roomName,
           lastMessageAt: msgToSend.createdAt,
         }
-
-        if (!roomBucket.current) {
-          roomBucket.current = await natsCon.getKVClient();
+        if (!nc.current) {
+          nc.current = await natsCon.createConnection();
         }
-        await roomBucket.current.put(roomId, encodeToBuf(roomUpdate));
+        await nc.current.publish(`updateRoom.${roomId}.${user.name}`, encodeToBuf(roomUpdate))
+
         lastMsgTimeout.current = null;
       }, 2500);
 
@@ -163,8 +154,6 @@ export default function Chat(
       if (!nc.current) {
         nc.current = await natsCon.createConnection();
       }
-      console.log("istyping publish subj: " + "isTyping." + roomId + "." + user.name);
-      
       await nc.current.publish("isTyping." + roomId + "." + user.name, encodeToBuf(user.name));
     }
   }
