@@ -1,8 +1,29 @@
 import { Head } from "$fresh/runtime.ts";
+import { Handler, HandlerContext, PageProps } from "$fresh/server.ts";
+import { getCookies } from "$std/http/cookie.ts";
+import { makeKVsubService, makeNC } from "../communication/nats.ts";
 import { Page } from "../helpers/Page.tsx";
 import AddRoom from "../islands/AddRoom.tsx";
 
-export default function NewRoom() {
+interface Data {
+  username: string;
+}
+
+export const handler: Handler<Data> = async (
+  req: Request,
+  ctx: HandlerContext<Data>,
+): Promise<Response> => {
+  const username = getCookies(req.headers)["user_name"];
+  
+  makeNC();
+  makeKVsubService("*", username);
+
+  return await ctx.render({
+    username: username
+  });
+};
+
+export default function NewRoom({ data }: PageProps<Data>) {
   return (
     <>
       <Head>
@@ -25,7 +46,9 @@ export default function NewRoom() {
             </div>
             <div />
           </div>
-          <AddRoom />
+          <AddRoom
+            username = {data.username}
+          />
         </div>
       </Page>
     </>
