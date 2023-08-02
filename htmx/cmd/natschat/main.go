@@ -45,12 +45,7 @@ func run(ctx context.Context) error {
 	}
 	defer nc.Close()
 
-	js, err := nc.JetStream()
-	if err != nil {
-		log.Printf("can't connect to JetStream: %v", err)
-	}
-
-	if err := frontend.RunBlocking(ctx, js); err != nil {
+	if err := frontend.RunBlocking(ctx, nc); err != nil {
 		return fmt.Errorf("failed to run frontend: %w", err)
 	}
 

@@ -35,7 +35,7 @@ type FrontendEnv struct {
 
 var frontendEnv *FrontendEnv
 
-func RunBlocking(ctx context.Context, js nats.JetStreamContext) error {
+func RunBlocking(ctx context.Context, nc *nats.Conn) error {
 	frontendEnv = &FrontendEnv{}
 	if err := envconfig.Process("natschat", frontendEnv); err != nil {
 		return fmt.Errorf("failed to process env vars: %w", err)
@@ -46,14 +46,19 @@ func RunBlocking(ctx context.Context, js nats.JetStreamContext) error {
 	sess := sessions.NewCookieStore(sessionSecretHash)
 	sess.Options.SameSite = http.SameSiteStrictMode
 
-	oauthProvidersKV, err := toolbelt.UpsertKV(js, &nats.KeyValueConfig{
+	jsc, err := nc.JetStream()
+	if err != nil {
+		return fmt.Errorf("failed to get jetstream connection: %w", err)
+	}
+
+	oauthProvidersKV, err := toolbelt.UpsertKV(jsc, &nats.KeyValueConfig{
 		Bucket: "oauth_providers",
 	})
 	if err != nil {
 		return fmt.Errorf("failed to upsert kv: %w", err)
 	}
 
-	oauthUsersKV, err := toolbelt.UpsertKV(js, &nats.KeyValueConfig{Bucket: "oauth_users"})
+	oauthUsersKV, err := toolbelt.UpsertKV(jsc, &nats.KeyValueConfig{Bucket: "oauth_users"})
 	if err != nil {
 		return fmt.Errorf("failed to upsert kv: %w", err)
 	}
@@ -66,7 +71,7 @@ func RunBlocking(ctx context.Context, js nats.JetStreamContext) error {
 
 	if err := errors.Join(
 		setupAuth(ctx, router, sess, oauthProvidersKV, oauthUsersKV),
-		setupRooms(ctx, router, js, oauthUsersKV),
+		setupRoomsRoutes(ctx, nc, router, oauthUsersKV),
 	); err != nil {
 		return fmt.Errorf("failed to setup routes: %w", err)
 	}

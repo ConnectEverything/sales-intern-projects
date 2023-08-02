@@ -103,10 +103,10 @@ var (
 	HXSWAP      = hx.Swap
 	HXTRIGGER   = hx.Trigger
 	HXINDICATOR = hx.Indicator
+	HXEXT       = hx.Ext
 	HXPUSH      = hx.PushURL("true")
-
-	HXBOOST   = ATTR("hx-boost", "true")
-	HXUNBOOST = ATTR("hx-boost", "false")
+	HXBOOST     = ATTR("hx-boost", "true")
+	HXUNBOOST   = ATTR("hx-boost", "false")
 )
 
 type (
@@ -142,6 +142,18 @@ func HYPERSCRIPT(hyperscript string) NODE {
 
 func HXPUSHURL(url string) NODE {
 	return hx.PushURL(url)
+}
+
+func HXSSE(url string, event ...string) NODE {
+	if len(event) == 0 {
+		event = append(event, "message")
+	}
+
+	return GRP(
+		HXEXT("sse"),
+		ATTR("sse-connect", url),
+		ATTR("sse-swap", strings.Join(event, ",")),
+	)
 }
 
 func VALUEI[T uint | uint8 | uint16 | uint32 | uint64 | int | int8 | int16 | int32 | int64](v T) NODE {
@@ -193,8 +205,9 @@ func PAGE(title string, bodyChildren ...NODE) NODE {
 			META(NAME("viewport"), CONTENT("width=device-width, initial-scale=1")),
 			LINK(REL("stylesheet"), HREF(staticPath("tailwind.css"))),
 			LINK(REL("icon"), HREF(staticPath("favicon.png")), TYPE("image/png")),
-			SCRIPT(SRC("https://unpkg.com/htmx.org@1.9.2")),
-			SCRIPT(SRC("https://unpkg.com/hyperscript.org@0.9.9")),
+			SCRIPT(SRC("https://unpkg.com/htmx.org")),
+			SCRIPT(SRC("https://unpkg.com/hyperscript.org")),
+			SCRIPT(SRC("https://unpkg.com/htmx.org/dist/ext/sse.js")),
 		},
 		Body: NODES{
 			// HXBOOST,
@@ -207,7 +220,7 @@ func navbar(ctx context.Context) NODE {
 	u := models.UserFromContext(ctx)
 
 	return DIV(
-		CLS("navbar bg-base-200"),
+		CLS("navbar bg-base-200 sticky top-0 z-50 shadow-xl"),
 		DIV(
 			CLS("flex-1 text-2xl font-bold"),
 			TXT("SynadiaChat"),
