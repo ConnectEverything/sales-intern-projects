@@ -103,6 +103,7 @@ var (
 	HXSWAP      = hx.Swap
 	HXTRIGGER   = hx.Trigger
 	HXINDICATOR = hx.Indicator
+	HXINCLUDE   = hx.Include
 	HXEXT       = hx.Ext
 	HXPUSH      = hx.PushURL("true")
 	HXBOOST     = ATTR("hx-boost", "true")

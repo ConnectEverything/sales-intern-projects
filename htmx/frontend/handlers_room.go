@@ -1,10 +1,15 @@
 package frontend
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
+	"strings"
+
+	"time"
 
 	"github.com/ConnectEverything/sales-intern-projects/htmx/models"
 	"github.com/ConnectEverything/sales-intern-projects/htmx/toolbelt"
@@ -12,14 +17,107 @@ import (
 	"github.com/delaneyj/gomponents-iconify/iconify/svg_spinners"
 	"github.com/dustin/go-humanize"
 	"github.com/go-chi/chi/v5"
+	"github.com/goccy/go-json"
 	"github.com/haukened/emojify"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/russross/blackfriday/v2"
+	"github.com/samber/lo"
 )
 
 func setupRoomRoutes(setupCtx context.Context, nc *nats.Conn, roomsRouter chi.Router, roomsKV, usersKV nats.KeyValue) error {
+	jsc, err := nc.JetStream()
+	if err != nil {
+		return err
+	}
+
+	js, err := jetstream.New(nc)
+	if err != nil {
+		return err
+	}
+
+	isTypingKV, err := toolbelt.UpsertKV(jsc, &nats.KeyValueConfig{
+		Bucket:  "is_typing",
+		Storage: nats.MemoryStorage,
+		TTL:     1 * time.Hour,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create is-typing kv: %w", err)
+	}
+
+	updatedTyping := func(roomID string, u *models.User, isUserTyping bool) error {
+		entry, err := isTypingKV.Get(roomID)
+		if err != nil {
+			if err != nats.ErrKeyNotFound {
+				return fmt.Errorf("failed to get is-typing entry: %w", err)
+			}
+		}
+		var initialBytes []byte
+
+		isTyping := &models.IsTypingRoomData{
+			Users:       map[string]*models.User{},
+			LastUpdated: map[string]time.Time{},
+		}
+
+		revision := uint64(0)
+		if entry != nil {
+			initialBytes = entry.Value()
+			if err := json.Unmarshal(initialBytes, isTyping); err != nil {
+				return fmt.Errorf("failed to unmarshal is-typing entry: %w", err)
+			}
+			revision = entry.Revision()
+		}
+
+		now := time.Now()
+		if u != nil {
+			if isUserTyping {
+				isTyping.Users[u.ID] = u
+				isTyping.LastUpdated[u.ID] = now
+			} else {
+				delete(isTyping.Users, u.ID)
+				delete(isTyping.LastUpdated, u.ID)
+			}
+		}
+
+		for userID, t := range isTyping.LastUpdated {
+			if now.Sub(t) > 2*time.Second {
+				delete(isTyping.Users, userID)
+				delete(isTyping.LastUpdated, userID)
+			}
+		}
+
+		updatedBytes, err := json.Marshal(isTyping)
+		if err != nil {
+			return fmt.Errorf("failed to marshal is-typing entry: %w", err)
+		}
+
+		if !bytes.Equal(initialBytes, updatedBytes) {
+			isTypingKV.Update(roomID, updatedBytes, revision)
+		}
+
+		return nil
+	}
+
+	// cleanup old typing users
+	go func() {
+		t := time.NewTicker(2 * time.Second)
+		for {
+			select {
+			case <-setupCtx.Done():
+				return
+			case <-t.C:
+				rooms, _ := isTypingKV.Keys()
+				for _, room := range rooms {
+					if err := updatedTyping(room, nil, false); err != nil {
+						panic(err)
+					}
+
+				}
+			}
+		}
+	}()
+
 	chatMessageNode := func(m *models.ChatMessage, u *models.User) NODE {
 		txt := m.Text
 		switch m.Type {
@@ -68,6 +166,11 @@ func setupRoomRoutes(setupCtx context.Context, nc *nats.Conn, roomsRouter chi.Ro
 		roomRouter.Get("/", func(w http.ResponseWriter, r *http.Request) {
 
 			roomID := chi.URLParam(r, "roomID")
+			room, _, err := models.ChatRoomFromKV(roomsKV, roomID)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 
 			Render(w, loggedInPage(r.Context(), roomID,
 				DIV(
@@ -81,8 +184,8 @@ func setupRoomRoutes(setupCtx context.Context, nc *nats.Conn, roomsRouter chi.Ro
 						),
 					),
 					DIV(
-						CLS("text-center text-2xl font-bold"),
-						TXT("#"+roomID),
+						CLS("text-center text-2xl font-bold uppercase"),
+						TXT(room.Name),
 					),
 					DIV(
 						ID("chat-messages"),
@@ -95,49 +198,48 @@ func setupRoomRoutes(setupCtx context.Context, nc *nats.Conn, roomsRouter chi.Ro
 						DIV(
 							CLS("divider"),
 						),
-						FORM(
-							HXPOST("/rooms/"+roomID+"/message"),
-							HXTARGET("previous .chat"),
-							HXSWAP("afterend"),
-							DIV(
-								CLS("flex gap-2"),
+						DIV(
+							HXSSE("/rooms/"+roomID+"/typing", "typing"),
+						),
+						DIV(
+							CLS("flex gap-2"),
 
-								DIV(
-									CLS("form-control flex-1"),
-									INPUT(
-										ID("msginput"),
-										CLS("input input-bordered"),
-										NAME("message"),
-										PLACEHOLDER("Message"),
-									),
+							DIV(
+								CLS("form-control flex-1"),
+								INPUT(
+									ID("msginput"),
+									CLS("input input-bordered"),
+									NAME("message"),
+									PLACEHOLDER("Message"),
+									HXPOST("/rooms/"+roomID+"/typing"),
+									HXTRIGGER("keydown throttle:2s"),
 								),
-								svg_spinners.PulseMultiple(
-									CLS("htmx-indicator"),
-								),
-								BUTTON(
-									HYPERSCRIPT(`
+							),
+							svg_spinners.PulseMultiple(
+								CLS("htmx-indicator"),
+							),
+							BUTTON(
+								HXPOST("/rooms/"+roomID+"/message"),
+								HXTARGET("previous .chat"),
+								HXSWAP("afterend"),
+								HXINCLUDE("#msginput"),
+								HYPERSCRIPT(`
 										on click wait 10ms
 										then put '' into #msginput.value
 										then wait 100ms
 										then go to the bottom of #chat-messages smoothly
-									`),
-									TYPE("submit"),
-									CLS("btn btn-primary"),
-									mdi.Send(),
+								`),
+								TYPE("submit"),
+								CLS("btn btn-primary"),
+								mdi.Send(),
 
-									TXT("Send"),
-								),
+								TXT("Send"),
 							),
 						),
 					),
 				)),
 			)
 		})
-
-		js, err := jetstream.New(nc)
-		if err != nil {
-			panic(err)
-		}
 
 		roomRouter.Get("/messages/stream", func(w http.ResponseWriter, r *http.Request) {
 			roomID := chi.URLParam(r, "roomID")
@@ -207,6 +309,7 @@ func setupRoomRoutes(setupCtx context.Context, nc *nats.Conn, roomsRouter chi.Ro
 		})
 
 		roomRouter.Post("/message", func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
 			if err := r.ParseForm(); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -225,14 +328,14 @@ func setupRoomRoutes(setupCtx context.Context, nc *nats.Conn, roomsRouter chi.Ro
 				return
 			}
 
-			u := models.UserFromContext(r.Context())
+			u := models.UserFromContext(ctx)
 
 			msg := []byte(emojify.Render(message))
 			msg = blackfriday.Run(msg)
 			msg = bluemonday.UGCPolicy().SanitizeBytes(msg)
 
 			chatMsg, err := models.ChatRoomAddMessage(
-				r.Context(),
+				ctx,
 				js,
 				roomsKV,
 				room.ID, u.ID, models.ChatMessageTypeMessage, string(msg),
@@ -244,6 +347,80 @@ func setupRoomRoutes(setupCtx context.Context, nc *nats.Conn, roomsRouter chi.Ro
 
 			Render(w, chatMessageNode(chatMsg, u))
 		})
+
+		roomRouter.Post("/typing", func(w http.ResponseWriter, r *http.Request) {
+			u := models.UserFromContext(r.Context())
+			roomID := chi.URLParam(r, "roomID")
+
+			if err := updatedTyping(roomID, u, true); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		})
+
+		roomRouter.Get("/typing", func(w http.ResponseWriter, r *http.Request) {
+
+			flusher, ok := w.(http.Flusher)
+			if !ok {
+				http.Error(w, "streaming unsupported", http.StatusInternalServerError)
+				return
+			}
+
+			roomID := chi.URLParam(r, "roomID")
+
+			h := w.Header()
+			h.Set("Content-Type", "text/event-stream")
+			h.Set("Cache-Control", "no-cache")
+			h.Set("Connection", "keep-alive")
+			h.Set("Access-Control-Allow-Origin", "*")
+			flusher.Flush()
+
+			watch, err := isTypingKV.Watch(roomID)
+			if err != nil {
+				panic(err)
+			}
+
+			prevTxt := ""
+			for {
+				select {
+				case <-r.Context().Done():
+					return
+				case entry := <-watch.Updates():
+					isTyping := &models.IsTypingRoomData{}
+					if entry == nil {
+						continue
+					}
+					if err := json.Unmarshal(entry.Value(), isTyping); err != nil {
+						panic(err)
+					}
+
+					if !frontendEnv.ShowSelfTyping {
+						delete(isTyping.Users, models.UserFromContext(r.Context()).ID)
+					}
+					users := lo.Map(lo.Values(isTyping.Users), func(u *models.User, i int) string {
+						return u.Name
+					})
+					sort.Strings(users)
+					var txt string
+					if len(users) > 0 {
+						txt = fmt.Sprintf("%s is typing...", strings.Join(users, ", "))
+					}
+
+					if txt != prevTxt {
+						prevTxt = txt
+						fmt.Fprintf(w, "event: typing\nid:%s\ndata:", toolbelt.NextEncodedID())
+						DIV(
+							CLS("flex justify-center items-center"),
+							TXT(txt),
+						).Render(w)
+						fmt.Fprintf(w, "\n\n")
+						flusher.Flush()
+					}
+
+				}
+			}
+		})
+
 	})
 
 	return nil

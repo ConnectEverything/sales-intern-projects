@@ -25,12 +25,13 @@ import (
 )
 
 type FrontendEnv struct {
-	Host          string `default:"http://localhost"`
-	Port          int    `default:"1337"`
-	SessionKey    string `default:"natschat" split_words:"true"`
-	SessionSecret []byte `required:"true" split_words:"true"`
-	StartPage     string `default:"/" split_words:"true"`
-	AuthJson      []byte `required:"true" split_words:"true"`
+	Host           string `default:"http://localhost"`
+	Port           int    `default:"1337"`
+	SessionKey     string `default:"natschat" split_words:"true"`
+	SessionSecret  []byte `required:"true" split_words:"true"`
+	StartPage      string `default:"/" split_words:"true"`
+	AuthJson       []byte `required:"true" split_words:"true"`
+	ShowSelfTyping bool   `default:"false" split_words:"true"`
 }
 
 var frontendEnv *FrontendEnv

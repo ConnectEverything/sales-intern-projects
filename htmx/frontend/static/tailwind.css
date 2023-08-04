@@ -1893,6 +1893,10 @@ html {
   z-index: 50;
 }
 
+.mt-4 {
+  margin-top: 1rem;
+}
+
 .flex {
   display: flex;
 }

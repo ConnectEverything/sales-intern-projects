@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/ConnectEverything/sales-intern-projects/htmx/toolbelt"
@@ -136,7 +135,6 @@ type ChatRoomMessagesArgs struct {
 
 func ChatRoomMessagesCh(ctx context.Context, args ChatRoomMessagesArgs) {
 	subject := fmt.Sprintf("%s.%s.>", UpdateRoomKeyPrefix, args.RoomId)
-	log.Print(subject)
 
 	consumer, err := args.JS.CreateOrUpdateConsumer(ctx, UpdateRoomsName, jetstream.ConsumerConfig{
 		FilterSubject: subject,
@@ -194,6 +192,11 @@ func ChatRoomMessagesCh(ctx context.Context, args ChatRoomMessagesArgs) {
 
 		msg.Ack()
 
-		// time.Sleep(150 * time.Millisecond)
+		// time.Sleep(1 * time.Second)
 	}
+}
+
+type IsTypingRoomData struct {
+	Users       map[string]*User     `json:"users"`
+	LastUpdated map[string]time.Time `json:"lastUpdated"`
 }

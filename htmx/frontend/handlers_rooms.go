@@ -36,14 +36,14 @@ func setupRoomsRoutes(setupCtx context.Context, nc *nats.Conn, router chi.Router
 			return FORM(
 				DIV(
 					ID("new-room-form"),
-					CLS("flex gap-2"),
+					CLS("flex gap-2 mt-4"),
 					DIV(
 						CLS("form-control flex-1"),
 						INPUT(
 							HYPERSCRIPT(`on load or keyup if my value is not empty then show #newRoomButton else hide #newRoomButton `),
 							CLS("input input-bordered w-full"),
 							NAME("name"),
-							PLACEHOLDER("Room Name"),
+							PLACEHOLDER("Create Room Name"),
 						),
 						DIV(
 							CLS("label-text text-error"),

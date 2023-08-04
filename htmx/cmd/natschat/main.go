@@ -14,6 +14,7 @@ import (
 )
 
 func main() {
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
 
 	ctx := signals.SetupSignalHandler()
 	if err := run(ctx); err != nil {
