@@ -178,6 +178,7 @@ func setupRoomRoutes(setupCtx context.Context, nc *nats.Conn, roomsRouter chi.Ro
 					DIV(
 						A(
 							CLS("btn btn-primary"),
+							HXBOOST,
 							HREF("/rooms"),
 							mdi.ArrowLeft(),
 							TXT("Rooms"),
