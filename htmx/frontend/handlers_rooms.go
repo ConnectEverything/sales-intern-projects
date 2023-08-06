@@ -34,13 +34,13 @@ func setupRoomsRoutes(setupCtx context.Context, nc *nats.Conn, router chi.Router
 
 		newRoomForm := func(err string) NODE {
 			return FORM(
+				ATTR("x-data", "{ name: '' }"),
 				DIV(
-					ID("new-room-form"),
 					CLS("flex gap-2 mt-4"),
 					DIV(
 						CLS("form-control flex-1"),
 						INPUT(
-							HYPERSCRIPT(`on load or keyup if my value is not empty then show #newRoomButton else hide #newRoomButton `),
+							ATTR("x-model", "name"),
 							CLS("input input-bordered w-full"),
 							NAME("name"),
 							PLACEHOLDER("Create Room Name"),
@@ -51,7 +51,8 @@ func setupRoomsRoutes(setupCtx context.Context, nc *nats.Conn, router chi.Router
 						),
 					),
 					BUTTON(
-						ID("newRoomButton"),
+						ATTR("x-show", "name.length > 0"),
+						ATTR("x-transition"),
 						HXPOST("/rooms/new"),
 						CLS("btn btn-primary"),
 						mdi.Plus(),

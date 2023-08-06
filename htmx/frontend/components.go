@@ -68,6 +68,7 @@ var (
 	REQUIRED = h.Required()
 	DISABLED = h.Disabled()
 	SELECTED = h.Selected()
+	DEFER    = h.Defer()
 	RAW      = g.Raw
 
 	H1 = h.H1
@@ -137,10 +138,6 @@ func COLSPAN(colspan int) NODE {
 	return ATTR("colspan", strconv.Itoa(colspan))
 }
 
-func HYPERSCRIPT(hyperscript string) NODE {
-	return ATTR("_", hyperscript)
-}
-
 func HXPUSHURL(url string) NODE {
 	return hx.PushURL(url)
 }
@@ -207,8 +204,9 @@ func PAGE(title string, bodyChildren ...NODE) NODE {
 			LINK(REL("stylesheet"), HREF(staticPath("tailwind.css"))),
 			LINK(REL("icon"), HREF(staticPath("favicon.png")), TYPE("image/png")),
 			SCRIPT(SRC("https://unpkg.com/htmx.org")),
-			SCRIPT(SRC("https://unpkg.com/hyperscript.org")),
 			SCRIPT(SRC("https://unpkg.com/htmx.org/dist/ext/sse.js")),
+			SCRIPT(DEFER, SRC("https://unpkg.com/alpinejs")),
+			SCRIPT(SRC(staticPath("alpine-plugins.js"))),
 		},
 		Body: NODES{
 			// HXBOOST,
