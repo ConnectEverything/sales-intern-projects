@@ -172,8 +172,15 @@ func setupRoomRoutes(setupCtx context.Context, nc *nats.Conn, roomsRouter chi.Ro
 				return
 			}
 
+			scrollToBottom := ATTR("x-on:htmx:after-settle", `async function(e){
+				const body = document.getElementById('messages-container')
+				$scrollto(body)
+			}`)
+
 			Render(w, loggedInPage(r.Context(), roomID,
 				DIV(
+					ID("messages-container"),
+					ATTR("x-data", "{ message: '' }"),
 					CLS("flex flex-col gap-4"),
 					DIV(
 						A(
@@ -195,20 +202,21 @@ func setupRoomRoutes(setupCtx context.Context, nc *nats.Conn, roomsRouter chi.Ro
 							CLS("flex flex-col gap-4"),
 							HXSSE("/rooms/"+roomID+"/messages/stream", "chat"),
 							HXSWAP("beforeend"),
+							scrollToBottom,
 						),
 						DIV(
 							CLS("divider"),
 						),
 						DIV(
 							HXSSE("/rooms/"+roomID+"/typing", "typing"),
+							scrollToBottom,
 						),
 						DIV(
 							CLS("flex gap-2"),
-
 							DIV(
 								CLS("form-control flex-1"),
 								INPUT(
-									ID("msginput"),
+									ATTR("x-model", "message"),
 									CLS("input input-bordered"),
 									NAME("message"),
 									PLACEHOLDER("Message"),
@@ -221,19 +229,12 @@ func setupRoomRoutes(setupCtx context.Context, nc *nats.Conn, roomsRouter chi.Ro
 							),
 							BUTTON(
 								HXPOST("/rooms/"+roomID+"/message"),
-								HXTARGET("previous .chat"),
-								HXSWAP("afterend"),
-								HXINCLUDE("#msginput"),
-								HYPERSCRIPT(`
-										on click wait 10ms
-										then put '' into #msginput.value
-										then wait 100ms
-										then go to the bottom of #chat-messages smoothly
-								`),
-								TYPE("submit"),
+								HXSWAP("none"),
+								HXINCLUDE("input[name='message']"),
+								ATTR("x-on:htmx:trigger", `message = ''`),
+
 								CLS("btn btn-primary"),
 								mdi.Send(),
-
 								TXT("Send"),
 							),
 						),
@@ -335,18 +336,15 @@ func setupRoomRoutes(setupCtx context.Context, nc *nats.Conn, roomsRouter chi.Ro
 			msg = blackfriday.Run(msg)
 			msg = bluemonday.UGCPolicy().SanitizeBytes(msg)
 
-			chatMsg, err := models.ChatRoomAddMessage(
+			if _, err := models.ChatRoomAddMessage(
 				ctx,
 				js,
 				roomsKV,
 				room.ID, u.ID, models.ChatMessageTypeMessage, string(msg),
-			)
-			if err != nil {
+			); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-
-			Render(w, chatMessageNode(chatMsg, u))
 		})
 
 		roomRouter.Post("/typing", func(w http.ResponseWriter, r *http.Request) {

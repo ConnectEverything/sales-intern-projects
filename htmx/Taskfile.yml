@@ -29,6 +29,7 @@ tasks:
     sources:
       - "**/*.go"
       - "**/*.sql"
+      - "frontend/static/**/*"
     deps:
       - kill
       - tailwind
