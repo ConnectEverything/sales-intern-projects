@@ -1,0 +1,6 @@
+{
+    "go.addTags": {
+        "transform": "camelcase"
+    },
+    "editor.formatOnSave": true
+}
