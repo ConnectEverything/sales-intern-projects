@@ -2,11 +2,11 @@ package models
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/ConnectEverything/sales-intern-projects/htmx/toolbelt"
+	"github.com/goccy/go-json"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 )

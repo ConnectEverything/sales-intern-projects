@@ -172,7 +172,7 @@ func setupRoomRoutes(setupCtx context.Context, nc *nats.Conn, roomsRouter chi.Ro
 				return
 			}
 
-			scrollToBottom := ATTR("x-on:htmx:after-settle", `async function(e){
+			scrollToBottom := XON("htmx:after-settle", `async function(e){
 				const body = document.getElementById('messages-container')
 				$scrollto(body)
 			}`)
@@ -180,12 +180,12 @@ func setupRoomRoutes(setupCtx context.Context, nc *nats.Conn, roomsRouter chi.Ro
 			Render(w, loggedInPage(r.Context(), roomID,
 				DIV(
 					ID("messages-container"),
-					ATTR("x-data", "{ message: '' }"),
+					ViewTransitionName("room-"+roomID),
+					XDATA("{ message: '' }"),
 					CLS("flex flex-col gap-4"),
 					DIV(
 						A(
 							CLS("btn btn-primary"),
-							HXBOOST,
 							HREF("/rooms"),
 							mdi.ArrowLeft(),
 							TXT("Rooms"),
@@ -216,23 +216,24 @@ func setupRoomRoutes(setupCtx context.Context, nc *nats.Conn, roomsRouter chi.Ro
 							DIV(
 								CLS("form-control flex-1"),
 								INPUT(
-									ATTR("x-model", "message"),
+									XMODEL("message"),
 									CLS("input input-bordered"),
 									NAME("message"),
 									PLACEHOLDER("Message"),
 									HXPOST("/rooms/"+roomID+"/typing"),
 									HXTRIGGER("keydown throttle:2s"),
+									XON("keydown.enter", `$refs.sendButton.click()`),
 								),
 							),
 							svg_spinners.PulseMultiple(
 								CLS("htmx-indicator"),
 							),
 							BUTTON(
+								XREF("sendButton"),
 								HXPOST("/rooms/"+roomID+"/message"),
 								HXSWAP("none"),
 								HXINCLUDE("input[name='message']"),
-								ATTR("x-on:htmx:trigger", `message = ''`),
-
+								XON("htmx:trigger", `message = ''`),
 								CLS("btn btn-primary"),
 								mdi.Send(),
 								TXT("Send"),

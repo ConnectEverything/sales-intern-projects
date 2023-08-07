@@ -3,7 +3,6 @@ package frontend
 import (
 	"context"
 	"embed"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -13,6 +12,7 @@ import (
 	"github.com/ConnectEverything/sales-intern-projects/htmx/toolbelt"
 	"github.com/benbjohnson/hashfs"
 	"github.com/delaneyj/gomponents-iconify/iconify/mdi"
+	"github.com/goccy/go-json"
 	g "github.com/maragudk/gomponents"
 	hx "github.com/maragudk/gomponents-htmx"
 	c "github.com/maragudk/gomponents/components"
@@ -101,7 +101,6 @@ var (
 	HXCONFIRM   = hx.Confirm
 	HXVALS      = hx.Vals
 	HXTARGET    = hx.Target
-	HXSWAP      = hx.Swap
 	HXTRIGGER   = hx.Trigger
 	HXINDICATOR = hx.Indicator
 	HXINCLUDE   = hx.Include
@@ -154,6 +153,47 @@ func HXSSE(url string, event ...string) NODE {
 	)
 }
 
+func ViewTransitionName(id string) NODE {
+	return h.StyleAttr("view-transition-name: " + id)
+}
+
+func XDATA(data string) NODE {
+	return ATTR("x-data", data)
+}
+
+func XDATAJSON(v any) NODE {
+	b, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+
+	return XDATA(string(b))
+}
+
+func XSHOW(v string) NODE {
+	return ATTR("x-show", v)
+}
+
+func XTRANSITION(v ...string) NODE {
+	return ATTR("x-transition", v...)
+}
+
+func XREF(ref string) NODE {
+	return ATTR("x-ref", ref)
+}
+
+func XMODEL(v string) NODE {
+	return ATTR("x-model", v)
+}
+
+func XON(event, handler string) NODE {
+	return ATTR("x-on:"+event, handler)
+}
+
+func HXSWAP(target string) NODE {
+	return hx.Swap(target + " transition:true")
+}
+
 func VALUEI[T uint | uint8 | uint16 | uint32 | uint64 | int | int8 | int16 | int32 | int64](v T) NODE {
 	return VALUE(strconv.Itoa(int(v)))
 }
@@ -201,6 +241,7 @@ func PAGE(title string, bodyChildren ...NODE) NODE {
 		Head: NODES{
 			META(CHARSET("utf-8")),
 			META(NAME("viewport"), CONTENT("width=device-width, initial-scale=1")),
+			META(NAME("view-transition"), CONTENT("same-origin")),
 			LINK(REL("stylesheet"), HREF(staticPath("tailwind.css"))),
 			LINK(REL("icon"), HREF(staticPath("favicon.png")), TYPE("image/png")),
 			SCRIPT(SRC("https://unpkg.com/htmx.org")),

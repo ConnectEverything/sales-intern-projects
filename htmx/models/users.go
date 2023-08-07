@@ -2,9 +2,9 @@ package models
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
+	"github.com/goccy/go-json"
 	"github.com/nats-io/nats.go"
 )
 

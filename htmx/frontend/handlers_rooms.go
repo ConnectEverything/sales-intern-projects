@@ -2,7 +2,6 @@ package frontend
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -12,6 +11,7 @@ import (
 	"github.com/delaneyj/gomponents-iconify/iconify/mdi"
 	"github.com/dustin/go-humanize"
 	"github.com/go-chi/chi/v5"
+	"github.com/goccy/go-json"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 	lop "github.com/samber/lo/parallel"
@@ -34,13 +34,13 @@ func setupRoomsRoutes(setupCtx context.Context, nc *nats.Conn, router chi.Router
 
 		newRoomForm := func(err string) NODE {
 			return FORM(
-				ATTR("x-data", "{ name: '' }"),
+				XDATA("{ name: '' }"),
 				DIV(
 					CLS("flex gap-2 mt-4"),
 					DIV(
 						CLS("form-control flex-1"),
 						INPUT(
-							ATTR("x-model", "name"),
+							XMODEL("name"),
 							CLS("input input-bordered w-full"),
 							NAME("name"),
 							PLACEHOLDER("Create Room Name"),
@@ -51,8 +51,8 @@ func setupRoomsRoutes(setupCtx context.Context, nc *nats.Conn, router chi.Router
 						),
 					),
 					BUTTON(
-						ATTR("x-show", "name.length > 0"),
-						ATTR("x-transition"),
+						XSHOW("name.length == 0"),
+						XTRANSITION(),
 						HXPOST("/rooms/new"),
 						CLS("btn btn-primary"),
 						mdi.Plus(),
@@ -101,6 +101,7 @@ func setupRoomsRoutes(setupCtx context.Context, nc *nats.Conn, router chi.Router
 						CLS("flex flex-col flex-wrap gap-4 w-full"),
 						RANGE(rooms, func(r *models.ChatRoom) NODE {
 							return DIV(
+								ViewTransitionName("room-"+r.ID),
 								CLS("card shadow-lg bg-base-200"),
 								A(
 									HREF(fmt.Sprintf("/rooms/%s", r.ID)),
