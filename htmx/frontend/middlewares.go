@@ -3,6 +3,7 @@ package frontend
 import (
 	"net/http"
 
+	"github.com/CAFxX/httpcompression"
 	"github.com/ConnectEverything/sales-intern-projects/htmx/models"
 	"github.com/goccy/go-json"
 	"github.com/gorilla/sessions"
@@ -32,6 +33,14 @@ import (
 // 		return next(w, req)
 // 	}
 // }
+
+func compressMiddleware() func(next http.Handler) http.Handler {
+	compress, errr := httpcompression.DefaultAdapter()
+	if errr != nil {
+		panic(errr)
+	}
+	return compress
+}
 
 func authMiddleware(userKV nats.KeyValue, sessionStore sessions.Store) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {

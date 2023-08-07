@@ -3,6 +3,7 @@ module github.com/ConnectEverything/sales-intern-projects/htmx
 go 1.20
 
 require (
+	github.com/CAFxX/httpcompression v0.0.8
 	github.com/benbjohnson/hashfs v0.2.1
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/cenkalti/backoff/v4 v4.2.1
@@ -34,6 +35,7 @@ require (
 )
 
 require (
+	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/pprof v0.0.0-20221118152302-e6195bd50e26 // indirect

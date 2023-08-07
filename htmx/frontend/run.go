@@ -68,6 +68,7 @@ func RunBlocking(ctx context.Context, nc *nats.Conn) error {
 	router.Use(
 		middleware.Logger,
 		authMiddleware(oauthUsersKV, sess),
+		compressMiddleware(),
 	)
 
 	if err := errors.Join(
